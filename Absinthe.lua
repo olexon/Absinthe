@@ -1198,11 +1198,11 @@ end
 local aspect_set = false -- to stop sending commands when aspectratio is off
 local function aspecratio()
     if aspectratio_slider:GetValue() ~= 0 then
-        client.Command("r_aspectratio " .. aspectratio_slider:GetValue(), true)
+        client.SetConVar("r_aspectratio", aspectratio_slider:GetValue())
         aspect_set = false
     else
         if not aspect_set then
-            client.Command("r_aspectratio 0", true)
+            client.SetConVar("r_aspectratio", 0)
             aspect_set = true
         end
     end
