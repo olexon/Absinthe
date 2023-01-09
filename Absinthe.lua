@@ -67,7 +67,6 @@ local rage_aa_gb = gui.Groupbox(tab, "Anti-Aim", 225, 125, 200, 200)
 local inverter_kb = gui.Keybox(rage_aa_gb, "inverter_kb", "Inverter (press)", 0)
 local freestand_kb = gui.Keybox(rage_aa_gb, "freestand_kb", "Freestanding (hold)", 0)
 local legitaa_kb = gui.Keybox(rage_aa_gb, "legitaa_kb", "Legit Anti-Aim (hold)", 0)
---local djitter = gui.Checkbox(rage_aa_gb, "djitter", "Desync Jitter", 0)
 local desync_cb = gui.Combobox(rage_aa_gb, "desync_cb", "Desync", unpack({"Static", "Jitter"}))
 
 local cond_cb = gui.Combobox(rage_aa_gb, "rage_aa_conds", "Conditions", unpack({"Standing", "Moving", "Slowwalking", "In Air"}))
@@ -239,9 +238,15 @@ end
 
 local semirage_gb = gui.Groupbox(tab, "Semi-Rage", 10, 125, 200, 200)
 local semirage_sw = gui.Checkbox(semirage_gb, "semirage_sw", "Master Switch", false)
-gui.Text(semirage_gb, "coming soon xd")
+local unsafe_sw = gui.Checkbox(semirage_gb, "unsafe_sw", "Allow Unsafe Features", false)
+local unsafe_txt = gui.Text(semirage_gb, "Allows user to use features\n\nthat may cause untrusted bans")
+
+local dynamicfov_sw = gui.Checkbox(semirage_gb, "dynamicfov_sw", "Dynamic FOV", false)
+local dynamicfov_min = gui.Slider(semirage_gb, "dynamicfov_min", "Dynamic FOV Minimum", 1, 1, 30)
+local dynamicfov_max = gui.Slider(semirage_gb, "dynamicfov_max", "Dynamic FOV Maximum", 1, 1, 30)
 
 local legit_aa_gb = gui.Groupbox(tab, "Legit-Anti-Aim", 225, 125, 200, 200)
+local legit_inverter_kb = gui.Keybox(legit_aa_gb, "legit_inverter_kb", "Inverter (press)", 0)
 
 local misc_gb = gui.Groupbox(tab, "Misc", 10, 125, 200, 200)
 local r8_fix = gui.Checkbox(misc_gb, "r8_fix", "Revolver dump fix", false)
@@ -892,8 +897,8 @@ local function anti_brute(event) -- still requires some love
 end
 
 local function desync_inverter()
-    if rage_sw:GetValue() then
-        if inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(inverter_kb:GetValue()) then
+    if rage_sw:GetValue() or semirage_sw:GetValue() then
+        if (inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(inverter_kb:GetValue())) or (legit_inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(legit_inverter_kb:GetValue())) then
             gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
         end
     end
@@ -968,6 +973,62 @@ local function exploits_toggles()
 end
 
 -- SEMI-RAGE
+local function clamp() -- this won't allow user to set some things to minimize the chance of getting banned
+    if semirage_sw:GetValue() then
+        gui.SetValue("rbot.antiaim.base", 0)
+        gui.SetValue("rbot.antiaim.condition.autodir.edges", 0)
+        gui.SetValue("rbot.antiaim.condition.autodir.targets", 0)
+        gui.SetValue("rbot.antiaim.advanced.pitch", 0)
+
+        if not unsafe_sw:GetValue() then
+            gui.SetValue("misc.antiuntrusted", 1)
+            gui.SetValue("rbot.antiaim.advanced.roll", 0)
+            gui.SetValue("rbot.antiaim.advanced.antiresolver", 0) -- idk if this is safe or not but i never saw any1 using it so /shrug
+            gui.SetValue("rbot.antiaim.extra.exposefake", 0)
+
+            if gui.GetValue("rbot.aim.target.fov") > 30 then 
+                gui.SetValue("rbot.aim.target.fov", 30)
+            end
+        end
+    end
+end
+
+local function dynamicfov()
+    if semirage_sw:GetValue() and dynamicfov_sw:GetValue() then
+        if dynamicfov_min:GetValue() > dynamicfov_max:GetValue() then return end
+
+        local localplayer = entities.GetLocalPlayer()
+
+        if localplayer == nil or not localplayer:IsAlive() then return end
+
+        local players = entities.FindByClass("CCSPlayer")
+        local localplayer_head = localplayer:GetHitboxPosition(0)
+        local distance_to_enemy = nil
+
+        for i = 1, #players do
+            local player = players[i]
+            if player:IsAlive() then
+                if player:GetTeamNumber() ~= localplayer:GetTeamNumber() then
+                    local player_head = player:GetHitboxPosition(0)
+                    distance_to_enemy = math.sqrt(math.pow((player_head.x - localplayer_head.x), 2) + 
+                    math.pow((player_head.y - localplayer_head.y), 2) +
+                    math.pow((player_head.z - localplayer_head.z), 2))
+                end
+            end
+        end
+
+        local fov = nil
+
+        if distance_to_enemy == nil or distance_to_enemy > 1200 then 
+            fov = dynamicfov_min:GetValue() 
+        else
+            fov = math.floor(math.min(dynamicfov_max:GetValue(), math.max(dynamicfov_min:GetValue(), 5000 / distance_to_enemy)))
+        end
+
+        gui.SetValue("rbot.aim.target.fov", fov)
+    end
+end
+
 -- MISC/VISUALS
 local screen_w, screen_h = draw.GetScreenSize()
 local Font_undercross = draw.CreateFont("Tahoma Bold", 13)
@@ -1103,7 +1164,7 @@ local function indicators()
             end
         end
         
-        if fd_ind:GetValue() and gui.GetValue("rbot.antiaim.extra.fakecrouchkey") ~= nil and input.IsButtonDown(gui.GetValue("rbot.antiaim.extra.fakecrouchkey")) then
+        if fd_ind:GetValue() and cheat.IsFakeDucking() then
             item_idx = item_idx + 1
 
             draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "fakeduck")
@@ -1222,7 +1283,6 @@ local function sw_checks()
         inverter_kb:SetDisabled(false)
         freestand_kb:SetDisabled(false)
         legitaa_kb:SetDisabled(false)
-        --djitter:SetDisabled(false)
         desync_cb:SetDisabled(false)
         dt_toggle:SetDisabled(false)
         hs_toggle:SetDisabled(false)
@@ -1267,7 +1327,6 @@ local function sw_checks()
         inverter_kb:SetDisabled(true)
         freestand_kb:SetDisabled(true)
         legitaa_kb:SetDisabled(true)
-        --djitter:SetDisabled(true)
         desync_cb:SetDisabled(true)
         dt_toggle:SetDisabled(true)
         hs_toggle:SetDisabled(true)
@@ -1365,6 +1424,31 @@ local function sw_checks()
 
     -- semirage tab
     if semirage_sw:GetValue() == true then
+        unsafe_sw:SetDisabled(false)
+        unsafe_txt:SetDisabled(false)
+
+        dynamicfov_sw:SetDisabled(false)
+        dynamicfov_min:SetDisabled(false)
+        dynamicfov_max:SetDisabled(false)
+
+        legit_inverter_kb:SetDisabled(false)
+    else
+        unsafe_sw:SetDisabled(true)
+        unsafe_txt:SetDisabled(true)
+
+        dynamicfov_sw:SetDisabled(true)
+        dynamicfov_min:SetDisabled(true)
+        dynamicfov_max:SetDisabled(true)
+
+        legit_inverter_kb:SetDisabled(true)
+    end
+
+    if dynamicfov_sw:GetValue() then
+        dynamicfov_max:SetInvisible(false)
+        dynamicfov_min:SetInvisible(false)
+    else
+        dynamicfov_max:SetInvisible(true)
+        dynamicfov_min:SetInvisible(true)
     end
 
 end
@@ -1388,7 +1472,7 @@ callbacks.Register("Draw", function()
     r8_dump_fix()
     aspecratio()
     
-    -- functions
+    -- rage/semi-rage functions
     dmg_override()
     desync_inverter()
     freestand()
@@ -1396,6 +1480,8 @@ callbacks.Register("Draw", function()
     resolver_override()
     legit_aa_on_hold()
     desync_jitter()
+    dynamicfov()
+    clamp()
 end)
 
 callbacks.Register("PostMove", function(cmd) 
