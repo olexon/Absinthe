@@ -8,20 +8,6 @@
     https://aimware.net/forum/thread/158191
 ]]
 
---[[
-    TODO:
-    - Redesign groupboxes
-    - Fix broken/not working as intended stuff
-    - Make semirage stuff
-    - Add autobuy override like in ot2
-    - Add more misc stuff
-    - Make dynamic ammount of stages in anti bruteforce
-    - Add more visuals
-    - Make visuals less ugly lol
-    - Update default colors
-    - Delete this junky lua
-]]
-
 local rb_ref = gui.Reference("RAGEBOT")
 local tab = gui.Tab(rb_ref, "absinthe", "Absinthe")
 
@@ -69,6 +55,11 @@ local freestand_kb = gui.Keybox(rage_aa_gb, "freestand_kb", "Freestanding (hold)
 local legitaa_kb = gui.Keybox(rage_aa_gb, "legitaa_kb", "Legit Anti-Aim (hold)", 0)
 local desync_cb = gui.Combobox(rage_aa_gb, "desync_cb", "Desync", unpack({"Static", "Jitter"}))
 
+local lby_flick_sw = gui.Checkbox(rage_aa_gb, "lby_flick_sw", "LBY Flick", false)
+local lby_flick_angle = gui.Slider(rage_aa_gb, "lby_flick_angle", "Flick Angle", 1, 1, 180)
+local lby_flick_freq = gui.Slider(rage_aa_gb, "lby_flick_freq", "Flick Frequency (ticks)", 3, 3, 45)
+
+local enable_conditions_sw = gui.Checkbox(rage_aa_gb, "enable_conditions_sw", "Enable Conditional Anti-Aim", false)
 local cond_cb = gui.Combobox(rage_aa_gb, "rage_aa_conds", "Conditions", unpack({"Standing", "Moving", "Slowwalking", "In Air"}))
 
 local base_yaw_stand = gui.Slider(rage_aa_gb, "base_yaw_stand", "Base Yaw", 180, -180, 180)
@@ -110,7 +101,117 @@ local antibrute_stage9 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 9",
 local antibrute_stage10 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 10", 0, -58, 58)]]
 
 local function cond_ui()
-    if cond_cb:GetValue() == 0 then
+    if enable_conditions_sw:GetValue() then
+        if cond_cb:GetValue() == 0 then
+            base_yaw_stand:SetInvisible(false)
+            base_yaw_walking:SetInvisible(true)
+            base_yaw_slowwalking:SetInvisible(true)
+            base_yaw_inair:SetInvisible(true)
+
+            aa_mode_select_stand:SetInvisible(false)
+            aa_mode_select_walk:SetInvisible(true)
+            aa_mode_select_slowwalk:SetInvisible(true)
+            aa_mode_select_inair:SetInvisible(true)
+
+            aa_mode_angle_stand:SetInvisible(false)
+            aa_mode_angle_walk:SetInvisible(true)
+            aa_mode_angle_slowwalk:SetInvisible(true)
+            aa_mode_angle_inair:SetInvisible(true)
+
+            roll_on_stand:SetInvisible(false)
+            roll_on_walk:SetInvisible(true)
+            roll_on_slowwalk:SetInvisible(true)
+            roll_in_air:SetInvisible(true)
+
+            if aa_mode_select_stand:GetValue() == 0 or aa_mode_select_stand:GetValue() == 4 then
+                aa_mode_angle_stand:SetInvisible(true)
+                aa_mode_angle_walk:SetInvisible(true)
+                aa_mode_angle_slowwalk:SetInvisible(true)
+                aa_mode_angle_inair:SetInvisible(true)
+            end
+        elseif cond_cb:GetValue() == 1 then
+            base_yaw_stand:SetInvisible(true)
+            base_yaw_walking:SetInvisible(false)
+            base_yaw_slowwalking:SetInvisible(true)
+            base_yaw_inair:SetInvisible(true)
+            
+            aa_mode_select_stand:SetInvisible(true)
+            aa_mode_select_walk:SetInvisible(false)
+            aa_mode_select_slowwalk:SetInvisible(true)
+            aa_mode_select_inair:SetInvisible(true)
+
+            aa_mode_angle_stand:SetInvisible(true)
+            aa_mode_angle_walk:SetInvisible(false)
+            aa_mode_angle_slowwalk:SetInvisible(true)
+            aa_mode_angle_inair:SetInvisible(true)
+
+            roll_on_stand:SetInvisible(true)
+            roll_on_walk:SetInvisible(false)
+            roll_on_slowwalk:SetInvisible(true)
+            roll_in_air:SetInvisible(true)
+
+            if aa_mode_select_walk:GetValue() == 0 or aa_mode_select_walk:GetValue() == 4 then
+                aa_mode_angle_stand:SetInvisible(true)
+                aa_mode_angle_walk:SetInvisible(true)
+                aa_mode_angle_slowwalk:SetInvisible(true)
+                aa_mode_angle_inair:SetInvisible(true)
+            end
+        elseif cond_cb:GetValue() == 2 then
+            base_yaw_stand:SetInvisible(true)
+            base_yaw_walking:SetInvisible(true)
+            base_yaw_slowwalking:SetInvisible(false)
+            base_yaw_inair:SetInvisible(true)
+            
+            aa_mode_select_stand:SetInvisible(true)
+            aa_mode_select_walk:SetInvisible(true)
+            aa_mode_select_slowwalk:SetInvisible(false)
+            aa_mode_select_inair:SetInvisible(true)
+
+            aa_mode_angle_stand:SetInvisible(true)
+            aa_mode_angle_walk:SetInvisible(true)
+            aa_mode_angle_slowwalk:SetInvisible(false)
+            aa_mode_angle_inair:SetInvisible(true)
+
+            roll_on_stand:SetInvisible(true)
+            roll_on_walk:SetInvisible(true)
+            roll_on_slowwalk:SetInvisible(false)
+            roll_in_air:SetInvisible(true)
+
+            if aa_mode_select_slowwalk:GetValue() == 0 or aa_mode_select_slowwalk:GetValue() == 4 then
+                aa_mode_angle_stand:SetInvisible(true)
+                aa_mode_angle_walk:SetInvisible(true)
+                aa_mode_angle_slowwalk:SetInvisible(true)
+                aa_mode_angle_inair:SetInvisible(true)
+            end
+        elseif cond_cb:GetValue() == 3 then
+            base_yaw_stand:SetInvisible(true)
+            base_yaw_walking:SetInvisible(true)
+            base_yaw_slowwalking:SetInvisible(true)
+            base_yaw_inair:SetInvisible(false)
+            
+            aa_mode_select_stand:SetInvisible(true)
+            aa_mode_select_walk:SetInvisible(true)
+            aa_mode_select_slowwalk:SetInvisible(true)
+            aa_mode_select_inair:SetInvisible(false)
+
+            aa_mode_angle_stand:SetInvisible(true)
+            aa_mode_angle_walk:SetInvisible(true)
+            aa_mode_angle_slowwalk:SetInvisible(true)
+            aa_mode_angle_inair:SetInvisible(false)
+
+            roll_on_stand:SetInvisible(true)
+            roll_on_walk:SetInvisible(true)
+            roll_on_slowwalk:SetInvisible(true)
+            roll_in_air:SetInvisible(false)
+
+            if aa_mode_select_inair:GetValue() == 0 or aa_mode_select_inair:GetValue() == 4 then
+                aa_mode_angle_stand:SetInvisible(true)
+                aa_mode_angle_walk:SetInvisible(true)
+                aa_mode_angle_slowwalk:SetInvisible(true)
+                aa_mode_angle_inair:SetInvisible(true)
+            end
+        end
+    else
         base_yaw_stand:SetInvisible(false)
         base_yaw_walking:SetInvisible(true)
         base_yaw_slowwalking:SetInvisible(true)
@@ -130,94 +231,6 @@ local function cond_ui()
         roll_on_walk:SetInvisible(true)
         roll_on_slowwalk:SetInvisible(true)
         roll_in_air:SetInvisible(true)
-
-        if aa_mode_select_stand:GetValue() == 0 or aa_mode_select_stand:GetValue() == 4 then
-            aa_mode_angle_stand:SetInvisible(true)
-            aa_mode_angle_walk:SetInvisible(true)
-            aa_mode_angle_slowwalk:SetInvisible(true)
-            aa_mode_angle_inair:SetInvisible(true)
-        end
-    elseif cond_cb:GetValue() == 1 then
-        base_yaw_stand:SetInvisible(true)
-        base_yaw_walking:SetInvisible(false)
-        base_yaw_slowwalking:SetInvisible(true)
-        base_yaw_inair:SetInvisible(true)
-        
-        aa_mode_select_stand:SetInvisible(true)
-        aa_mode_select_walk:SetInvisible(false)
-        aa_mode_select_slowwalk:SetInvisible(true)
-        aa_mode_select_inair:SetInvisible(true)
-
-        aa_mode_angle_stand:SetInvisible(true)
-        aa_mode_angle_walk:SetInvisible(false)
-        aa_mode_angle_slowwalk:SetInvisible(true)
-        aa_mode_angle_inair:SetInvisible(true)
-
-        roll_on_stand:SetInvisible(true)
-        roll_on_walk:SetInvisible(false)
-        roll_on_slowwalk:SetInvisible(true)
-        roll_in_air:SetInvisible(true)
-
-        if aa_mode_select_walk:GetValue() == 0 or aa_mode_select_walk:GetValue() == 4 then
-            aa_mode_angle_stand:SetInvisible(true)
-            aa_mode_angle_walk:SetInvisible(true)
-            aa_mode_angle_slowwalk:SetInvisible(true)
-            aa_mode_angle_inair:SetInvisible(true)
-        end
-    elseif cond_cb:GetValue() == 2 then
-        base_yaw_stand:SetInvisible(true)
-        base_yaw_walking:SetInvisible(true)
-        base_yaw_slowwalking:SetInvisible(false)
-        base_yaw_inair:SetInvisible(true)
-        
-        aa_mode_select_stand:SetInvisible(true)
-        aa_mode_select_walk:SetInvisible(true)
-        aa_mode_select_slowwalk:SetInvisible(false)
-        aa_mode_select_inair:SetInvisible(true)
-
-        aa_mode_angle_stand:SetInvisible(true)
-        aa_mode_angle_walk:SetInvisible(true)
-        aa_mode_angle_slowwalk:SetInvisible(false)
-        aa_mode_angle_inair:SetInvisible(true)
-
-        roll_on_stand:SetInvisible(true)
-        roll_on_walk:SetInvisible(true)
-        roll_on_slowwalk:SetInvisible(false)
-        roll_in_air:SetInvisible(true)
-
-        if aa_mode_select_slowwalk:GetValue() == 0 or aa_mode_select_slowwalk:GetValue() == 4 then
-            aa_mode_angle_stand:SetInvisible(true)
-            aa_mode_angle_walk:SetInvisible(true)
-            aa_mode_angle_slowwalk:SetInvisible(true)
-            aa_mode_angle_inair:SetInvisible(true)
-        end
-    elseif cond_cb:GetValue() == 3 then
-        base_yaw_stand:SetInvisible(true)
-        base_yaw_walking:SetInvisible(true)
-        base_yaw_slowwalking:SetInvisible(true)
-        base_yaw_inair:SetInvisible(false)
-        
-        aa_mode_select_stand:SetInvisible(true)
-        aa_mode_select_walk:SetInvisible(true)
-        aa_mode_select_slowwalk:SetInvisible(true)
-        aa_mode_select_inair:SetInvisible(false)
-
-        aa_mode_angle_stand:SetInvisible(true)
-        aa_mode_angle_walk:SetInvisible(true)
-        aa_mode_angle_slowwalk:SetInvisible(true)
-        aa_mode_angle_inair:SetInvisible(false)
-
-        roll_on_stand:SetInvisible(true)
-        roll_on_walk:SetInvisible(true)
-        roll_on_slowwalk:SetInvisible(true)
-        roll_in_air:SetInvisible(false)
-
-        if aa_mode_select_inair:GetValue() == 0 or aa_mode_select_inair:GetValue() == 4 then
-            aa_mode_angle_stand:SetInvisible(true)
-            aa_mode_angle_walk:SetInvisible(true)
-            aa_mode_angle_slowwalk:SetInvisible(true)
-            aa_mode_angle_inair:SetInvisible(true)
-        end
     end
 
     -- this lua is one big sphagetti already so i will put it there
@@ -346,7 +359,7 @@ misc_subtab:SetPosY(17.5)
 misc_subtab:SetPosX(495)
 misc_subtab:SetHeight(80)
 
-local weapons_list = { -- will be useful later on i hope (IT WAS)
+local weapons_list = {
     [1] = "hpistol",
     [2] = "pistol",
     [3] = "pistol",
@@ -505,250 +518,332 @@ end
 -- RAGE AA
 local function rage_aa()
     if rage_sw:GetValue() then
-        -- conditions
-        slowwalkkey = gui.GetValue("rbot.accuracy.movement.slowkey")
 
-        local localplayer = entities:GetLocalPlayer()
-        local localplayer_velocity = localplayer:GetPropVector("localdata", "m_vecVelocity[0]"):Length()
-        local localplayer_flags = localplayer:GetPropBool("m_fFlags")
+        local tick_multiplier = 2 
 
-        if slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
+        if enable_conditions_sw:GetValue() then
+            -- conditions
+            slowwalkkey = gui.GetValue("rbot.accuracy.movement.slowkey")
 
-            if aa_mode_select_walk:GetValue() == 0 then
-                gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
-            elseif aa_mode_select_walk:GetValue() == 1 then
+            local localplayer = entities:GetLocalPlayer()
+            local localplayer_velocity = localplayer:GetPropVector("localdata", "m_vecVelocity[0]"):Length()
+            local localplayer_flags = localplayer:GetPropBool("m_fFlags")
 
-                if base_yaw_walking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
+            if slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
+
+                if aa_mode_select_walk:GetValue() == 0 then
+                    gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
+                elseif aa_mode_select_walk:GetValue() == 1 then
+
+                    if base_yaw_walking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
+                        end  
                     end
 
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
+                elseif aa_mode_select_walk:GetValue() == 2 then
+
+                    if base_yaw_walking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
+                        end  
+                    end
+
+                elseif aa_mode_select_walk:GetValue() == 3 then
+                    if base_yaw_walking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
+                        end  
+                    end
+
+                elseif aa_mode_select_walk:GetValue() == 4 then
+                    if globals.TickCount()%2 == 0 then
+                        gui.SetValue("rbot.antiaim.base", 0)
+                    end
+
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
+                        gui.SetValue("rbot.antiaim.base", 180)
                     end  
+                end 
+
+                if roll_on_walk:GetValue() then
+                    gui.SetValue("rbot.antiaim.advanced.roll", true)
                 else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
-                    end  
+                    gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
 
-            elseif aa_mode_select_walk:GetValue() == 2 then
+            elseif slowwalkkey ~= nil and input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
 
-                if base_yaw_walking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
+                if aa_mode_select_slowwalk:GetValue() == 0 then
+                    gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
+                elseif aa_mode_select_slowwalk:GetValue() == 1 then
+
+                    if base_yaw_slowwalking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
+                        end  
                     end
 
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
-                    end  
+                elseif aa_mode_select_slowwalk:GetValue() == 2 then
+
+                    if base_yaw_slowwalking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
+                        end  
+                    end
+
+                elseif aa_mode_select_slowwalk:GetValue() == 3 then
+                    if base_yaw_slowwalking:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
+                        end  
+                    end
+                
+                elseif aa_mode_select_slowwalk:GetValue() == 4 then
+                    if globals.TickCount()%2 == 0 then
+                        gui.SetValue("rbot.antiaim.base", 0)
+                    end
+
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
+                        gui.SetValue("rbot.antiaim.base", 180)
+                    end
+                end
+
+                if roll_on_slowwalk:GetValue() then
+                    gui.SetValue("rbot.antiaim.advanced.roll", true)
                 else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
+                    gui.SetValue("rbot.antiaim.advanced.roll", false)
+                end
+            elseif slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == false then
+                
+                if aa_mode_select_inair:GetValue() == 0 then
+                    gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
+                elseif aa_mode_select_inair:GetValue() == 1 then
+
+                    if base_yaw_inair:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_inair:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_inair:GetValue()))
+                        end  
                     end
 
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
-                    end  
+                elseif aa_mode_select_inair:GetValue() == 2 then
+
+                    if base_yaw_inair:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
+                        end  
+                    end
+
+                elseif aa_mode_select_inair:GetValue() == 3 then
+                    if base_yaw_inair:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
+                        end  
+                    end
+                
+                elseif aa_mode_select_inair:GetValue() == 4 then
+                    if globals.TickCount()%2 == 0 then
+                        gui.SetValue("rbot.antiaim.base", 0)
+                    end
+
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
+                        gui.SetValue("rbot.antiaim.base", 180)
+                    end
                 end
 
-            elseif aa_mode_select_walk:GetValue() == 3 then
-                if base_yaw_walking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
-                    end  
+                if roll_in_air:GetValue() then
+                    gui.SetValue("rbot.antiaim.advanced.roll", true)
                 else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
-                    end  
+                    gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
-
-            elseif aa_mode_select_walk:GetValue() == 4 then
-                if globals.TickCount()%2 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 0)
-                end
-
-                if globals.TickCount()%4 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 180)
-                end  
-            end 
-
-            if roll_on_walk:GetValue() then
-                gui.SetValue("rbot.antiaim.advanced.roll", true)
             else
-                gui.SetValue("rbot.antiaim.advanced.roll", false)
-            end
 
-        elseif slowwalkkey ~= nil and input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
+                if aa_mode_select_stand:GetValue() == 0 then
+                    gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
+                elseif aa_mode_select_stand:GetValue() == 1 then
 
-            if aa_mode_select_slowwalk:GetValue() == 0 then
-                gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
-            elseif aa_mode_select_slowwalk:GetValue() == 1 then
+                    if base_yaw_stand:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
+                        end
 
-                if base_yaw_slowwalking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
+                        end  
                     end
 
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                    end  
+                elseif aa_mode_select_stand:GetValue() == 2 then
+
+                    if base_yaw_stand:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
+                        end  
+                    end
+
+                elseif aa_mode_select_stand:GetValue() == 3 then
+                    if base_yaw_stand:GetValue() > 0 then    
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
+                        end  
+                    else
+                        if globals.TickCount()%2 == 0 then
+                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
+                        end
+
+                        if globals.TickCount()%(2*tick_multiplier) == 0 then
+                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
+                        end  
+                    end
+                
+                elseif aa_mode_select_stand:GetValue() == 4 then
+                    if globals.TickCount()%2 == 0 then
+                        gui.SetValue("rbot.antiaim.base", 0)
+                    end
+
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
+                        gui.SetValue("rbot.antiaim.base", 180)
+                    end
+                end
+
+                if roll_on_stand:GetValue() then
+                    gui.SetValue("rbot.antiaim.advanced.roll", true)
                 else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
-                    end  
+                    gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
-
-            elseif aa_mode_select_slowwalk:GetValue() == 2 then
-
-                if base_yaw_slowwalking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
-                    end  
-                end
-
-            elseif aa_mode_select_slowwalk:GetValue() == 3 then
-                if base_yaw_slowwalking:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                    end  
-                end
-            
-            elseif aa_mode_select_slowwalk:GetValue() == 4 then
-                if globals.TickCount()%2 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 0)
-                end
-
-                if globals.TickCount()%4 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 180)
-                end
-            end
-
-            if roll_on_slowwalk:GetValue() then
-                gui.SetValue("rbot.antiaim.advanced.roll", true)
-            else
-                gui.SetValue("rbot.antiaim.advanced.roll", false)
-            end
-        elseif slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == false then
-            
-            if aa_mode_select_inair:GetValue() == 0 then
-                gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
-            elseif aa_mode_select_inair:GetValue() == 1 then
-
-                if base_yaw_inair:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_inair:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_inair:GetValue()))
-                    end  
-                end
-
-            elseif aa_mode_select_inair:GetValue() == 2 then
-
-                if base_yaw_inair:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
-                    end  
-                end
-
-            elseif aa_mode_select_inair:GetValue() == 3 then
-                if base_yaw_inair:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
-                    end
-
-                    if globals.TickCount()%4 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
-                    end  
-                end
-            
-            elseif aa_mode_select_inair:GetValue() == 4 then
-                if globals.TickCount()%2 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 0)
-                end
-
-                if globals.TickCount()%4 == 0 then
-                    gui.SetValue("rbot.antiaim.base", 180)
-                end
-            end
-
-            if roll_in_air:GetValue() then
-                gui.SetValue("rbot.antiaim.advanced.roll", true)
-            else
-                gui.SetValue("rbot.antiaim.advanced.roll", false)
             end
         else
-
             if aa_mode_select_stand:GetValue() == 0 then
                 gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
             elseif aa_mode_select_stand:GetValue() == 1 then
@@ -758,7 +853,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
                     end  
                 else
@@ -766,7 +861,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
                     end  
                 end
@@ -778,7 +873,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
                     end  
                 else
@@ -786,7 +881,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
                     end  
                 end
@@ -797,7 +892,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
                     end  
                 else
@@ -805,7 +900,7 @@ local function rage_aa()
                         gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
                     end
 
-                    if globals.TickCount()%4 == 0 then
+                    if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
                     end  
                 end
@@ -815,7 +910,7 @@ local function rage_aa()
                     gui.SetValue("rbot.antiaim.base", 0)
                 end
 
-                if globals.TickCount()%4 == 0 then
+                if globals.TickCount()%(2*tick_multiplier) == 0 then
                     gui.SetValue("rbot.antiaim.base", 180)
                 end
             end
@@ -829,18 +924,66 @@ local function rage_aa()
     end
 end
 
-local pitch_bak = gui.GetValue("rbot.antiaim.advanced.pitch")
-local targets_bak = gui.GetValue("rbot.antiaim.condition.autodir.targets")
+local function lby_flick()
+    if rage_sw:GetValue() then
+        local localplayer = entities.GetLocalPlayer()
+
+        if not localplayer or not localplayer:IsAlive() then 
+            return
+        end
+
+        local yaw_value = base_yaw_stand:GetValue() -- will use stand's value till i stop being lazy mf
+
+        local desync_side = gui.GetValue("rbot.antiaim.base.rotation")
+        local flick_freq = lby_flick_freq:GetValue()
+
+        -- yaw should return to its normal state after flick because its forced by other function
+        if lby_flick_sw:GetValue() then
+            if desync_side > 0 then
+                if globals.TickCount()%flick_freq == 0 then
+                    gui.SetValue("rbot.antiaim.base", yaw_value - lby_flick_angle:GetValue())
+                end
+            elseif desync_side < 0 then
+                if globals.TickCount()%flick_freq == 0 then
+                    gui.SetValue("rbot.antiaim.base", (yaw_value - lby_flick_angle:GetValue()) * -1)
+                end
+            end
+        end
+    end
+end
+
+
+local legitaa_backup_state = 0
+local backup_legitaa = {
+    pitch = nil,
+    targets = nil
+}
+
 local function legit_aa_on_hold()
     if rage_sw:GetValue() then
         if legitaa_kb:GetValue() ~= 0 and input.IsButtonDown(legitaa_kb:GetValue()) then
+            if legitaa_backup_state ~= 1 then
+                backup_legitaa.pitch = gui.GetValue("rbot.antiaim.advanced.pitch")
+                backup_legitaa.targets = gui.GetValue("rbot.antiaim.condition.autodir.targets")
+    
+                legitaa_backup_state = 1
+            end
+
             gui.SetValue("rbot.antiaim.base", 0)
             gui.SetValue("rbot.antiaim.advanced.pitch", 0)
             gui.SetValue("rbot.antiaim.condition.autodir.targets", false)
             gui.SetValue("rbot.antiaim.condition.use", false)
         elseif legitaa_kb:GetValue() ~= 0 and not input.IsButtonDown(legitaa_kb:GetValue()) then
-            gui.SetValue("rbot.antiaim.advanced.pitch", pitch_bak)
-            gui.SetValue("rbot.antiaim.condition.autodir.targets", targets_bak)
+            if backup_legitaa.pitch == nil or backup_legitaa.targets == nil then return end
+
+            if gui.GetValue("rbot.antiaim.advanced.pitch") ~= backup_legitaa.pitch then
+                gui.SetValue("rbot.antiaim.advanced.pitch", backup_legitaa.pitch)
+            end
+
+            if gui.GetValue("rbot.antiaim.condition.autodir.targets") ~= backup_legitaa.targets then
+                gui.SetValue("rbot.antiaim.condition.autodir.targets", backup_legitaa.targets)
+            end
+
             gui.SetValue("rbot.antiaim.condition.use", false)
         end
     end
@@ -1217,7 +1360,7 @@ local function autobuy(event)
 end
 
 local r8_backup_state = 0
-local backup = {
+local backup_r8 = {
     fakelag = nil,
     fakelatency = nil,
 }
@@ -1233,39 +1376,34 @@ local function r8_dump_fix()
 
 
     if r8_fix:GetValue() then
-        if r8_backup_state ~= 1 then
-            backup.fakelag = gui.GetValue("misc.fakelag.enable")
-            backup.fakelatency = gui.GetValue("misc.fakelatency.enable")
-
-            r8_backup_state = 1
-        end
-
         if localplayer_weaponid == 64 then
+            if r8_backup_state ~= 1 then
+                backup_r8.fakelag = gui.GetValue("misc.fakelag.enable")
+                backup_r8.fakelatency = gui.GetValue("misc.fakelatency.enable")
+    
+                r8_backup_state = 1
+            end
+
             gui.SetValue("misc.fakelag.enable", false)
             gui.SetValue("misc.fakelatency.enable", false)
             gui.SetValue("rbot.accuracy.attack.hpistol.fire", 0)
         else
-            if gui.GetValue("misc.fakelag.enable") ~= backup.fakelag then
-                gui.SetValue("misc.fakelag.enable", backup.fakelag)
+            if backup_r8.fakelag == nil or backup_r8.fakelatency == nil then return end
+
+            if gui.GetValue("misc.fakelag.enable") ~= backup_r8.fakelag then
+                gui.SetValue("misc.fakelag.enable", backup_r8.fakelag)
             end
 
-            if gui.GetValue("misc.fakelatency.enable") ~= backup.fakelatency then
-                gui.SetValue("misc.fakelatency.enable", backup.fakelatency)
+            if gui.GetValue("misc.fakelatency.enable") ~= backup_r8.fakelatency then
+                gui.SetValue("misc.fakelatency.enable", backup_r8.fakelatency)
             end
         end
     end
 end
 
-local aspect_set = false -- to stop sending commands when aspectratio is off
 local function aspecratio()
-    if aspectratio_slider:GetValue() ~= 0 then
+    if client.GetConVar("r_aspectratio") ~= aspectratio_slider:GetValue() then
         client.SetConVar("r_aspectratio", aspectratio_slider:GetValue())
-        aspect_set = false
-    else
-        if not aspect_set then
-            client.SetConVar("r_aspectratio", 0)
-            aspect_set = true
-        end
     end
 end
 
@@ -1320,6 +1458,10 @@ local function sw_checks()
         lmg_or:SetDisabled(false)
         hpistol_or:SetDisabled(false)
         asniper_or:SetDisabled(false)
+        lby_flick_sw:SetDisabled(false)
+        lby_flick_angle:SetDisabled(false)
+        lby_flick_freq:SetDisabled(false)
+        enable_conditions_sw:SetDisabled(false)
     else
         dmg_selector:SetDisabled(true)
         dmg_or:SetDisabled(true)
@@ -1364,6 +1506,10 @@ local function sw_checks()
         lmg_or:SetDisabled(true)
         hpistol_or:SetDisabled(true)
         asniper_or:SetDisabled(true)
+        lby_flick_sw:SetDisabled(true)
+        lby_flick_angle:SetDisabled(true)
+        lby_flick_freq:SetDisabled(true)
+        enable_conditions_sw:SetDisabled(true)
     end
 
     if shared_check:GetValue() then
@@ -1422,6 +1568,20 @@ local function sw_checks()
         asniper_or:SetInvisible(true)
     end
 
+    if lby_flick_sw:GetValue() then
+        lby_flick_angle:SetInvisible(false)
+        lby_flick_freq:SetInvisible(false)
+    else
+        lby_flick_angle:SetInvisible(true)
+        lby_flick_freq:SetInvisible(true)
+    end
+
+    if enable_conditions_sw:GetValue() then
+        cond_cb:SetInvisible(false)
+    else
+        cond_cb:SetInvisible(true)
+    end
+
     -- semirage tab
     if semirage_sw:GetValue() == true then
         unsafe_sw:SetDisabled(false)
@@ -1452,6 +1612,23 @@ local function sw_checks()
     end
 
 end
+
+-- resets
+local backup_reset = gui.Button(misc_gb, "Reset backup states", function() 
+    legitaa_kb:SetValue(0)
+    r8_fix:SetValue(false)
+
+    legitaa_backup_state = 0
+    r8_backup_state = 0
+
+    backup_legitaa.pitch = nil
+    backup_legitaa.targets = nil
+
+    backup_r8.fakelag = nil
+    backup_r8.fakelatency = nil
+
+    print("reset successful, you can now re-enable your functions or reload your config")
+end)
 
 client.AllowListener("bullet_impact")
 callbacks.Register("FireGameEvent", anti_brute)
@@ -1485,5 +1662,6 @@ callbacks.Register("Draw", function()
 end)
 
 callbacks.Register("PostMove", function(cmd) 
-    rage_aa() 
+    rage_aa()
+    lby_flick()
 end)
