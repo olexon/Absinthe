@@ -7,3 +7,9 @@
 [1/9/2023] BETA v0.3
 * Added Dynamic FOV, Desync Inverter and protection against bans to semi-rage tab
 * Other Minor Improvements
+
+[1/14/2023] BETA v0.4
+* Added LBY Flick
+* Anti-Aim Conditions are now optional
+* Added Backup reset button (resets all backed up states [pitch, at targets, fakelag switch, fake latency switch])
+* Some improvements to backup functions
