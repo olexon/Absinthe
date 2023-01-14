@@ -10,6 +10,6 @@
 
 [1/14/2023] BETA v0.4
 * Added LBY Flick
-* Anti-Aim Conditions are now optional
 * Added Backup reset button (resets all backed up states [pitch, at targets, fakelag switch, fake latency switch])
+* Anti-Aim Conditions are now optional
 * Some improvements to backup functions
