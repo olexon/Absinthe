@@ -13,3 +13,13 @@
 * Added Backup reset button (resets all backed up states [pitch, at targets, fakelag switch, fake latency switch])
 * Anti-Aim Conditions are now optional
 * Some improvements to backup functions
+
+[1/24/2023] BETA v0.5
+* Added desync side indicator
+* Removed "Rage Quit!" button as it was taking space in the menu and wasn't really useful
+* Redesigned under crosshair indicators
+* Reorganised / Redesigned some ui elements
+* Added autobuy override option
+* Anti bruteforce stages now reset on death
+* Anti bruteforce now checks if bullet was fired by enemy
+* Script now checks for a newer version on load and notifies user if there is one
