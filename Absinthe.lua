@@ -8,13 +8,37 @@
     https://aimware.net/forum/thread/158191
 ]]
 
+local lua_ver = 0.5
+
+local latest_ver = tonumber(http.Get("https://github.com/olexon/Absinthe/raw/main/latest_ver"))
+
+if lua_ver < latest_ver then
+    local new_ver_svg_icon_data = http.Get("https://github.com/olexon/Absinthe/raw/main/svg/new_ver_icon.svg")
+    local new_ver_imgRGBA, new_ver_imgWidth, new_ver_imgHeight = common.RasterizeSVG(new_ver_svg_icon_data)
+    local new_ver_icon_texture = draw.CreateTexture(new_ver_imgRGBA, new_ver_imgWidth, new_ver_imgHeight)
+
+    local new_version_wnd = gui.Window("new_version_wnd", "New version available!", 0, 0, 270, 150); new_version_wnd:SetIcon(new_ver_icon_texture, 0.5)
+    gui.Text(new_version_wnd, "New version of Absinthe lua is available!\n\nYou can re-download lua from Aimware forum\n\nor click \"OK\" and keep using this version")
+    local ok_button = gui.Button(new_version_wnd, "OK", function() new_version_wnd:SetActive(false) end); ok_button:SetWidth(238)
+end
+
 local rb_ref = gui.Reference("RAGEBOT")
 local tab = gui.Tab(rb_ref, "absinthe", "Absinthe")
 
+local lua_version_text = nil
 local welcum_gb = gui.Groupbox(tab, "Welcome " .. cheat.GetUserName() .. "!", 10, 10, 200, 200)
 gui.Text(welcum_gb, "You are currently using Absinthe")
-gui.Text(welcum_gb, "Version BETA")
 
+if lua_ver < latest_ver then
+    lua_version_text = lua_ver .. " [Latest " .. latest_ver .. "]"
+else
+    lua_version_text = lua_ver
+end
+
+gui.Text(welcum_gb, "Version " .. lua_version_text)
+
+
+-- rage group
 local rage_gb = gui.Groupbox(tab, "Rage", 10, 125, 200, 200)
 local rage_sw = gui.Checkbox(rage_gb, "rage_sw", "Master Switch", false)
 local roll_res_ok = gui.Keybox(rage_gb, "roll_res_ok", "Roll resolver (hold)", 0)
@@ -22,34 +46,243 @@ local roll_res_ok = gui.Keybox(rage_gb, "roll_res_ok", "Roll resolver (hold)", 0
 local dt_toggle = gui.Checkbox(rage_gb, "dt_toggle", "Global DT toggle", false)
 local hs_toggle = gui.Checkbox(rage_gb, "hs_toggle", "Global HS toggle", false)
 
-local dmg_or = gui.Checkbox(rage_gb, "dmg_or", "Min DMG Override", false)
-local dmg_selector = gui.Multibox(rage_gb, "Weapons")
+-- dmg group
+local dmg_svg_icon_data = http.Get("https://raw.githubusercontent.com/olexon/Absinthe/main/svg/override_icon.svg")
+local or_imgRGBA, or_imgWidth, or_imgHeight = common.RasterizeSVG(dmg_svg_icon_data)
 
-local shared_check = gui.Checkbox(dmg_selector, "shared_check", "Shared", false)
-local zeus_check = gui.Checkbox(dmg_selector, "zeus_check", "Zeus", false)
-local sniper_check = gui.Checkbox(dmg_selector, "sniper_check", "AWP", false)
-local smg_check = gui.Checkbox(dmg_selector, "smg_check", "SMG", false)
-local shotgun_check = gui.Checkbox(dmg_selector, "shotgun_check", "Shotgun", false)
-local scout_check = gui.Checkbox(dmg_selector, "scout_check", "Scout", false)
-local rifle_check = gui.Checkbox(dmg_selector, "rifle_check", "Rifle", false)
-local pistol_check = gui.Checkbox(dmg_selector, "pistol_check", "Pistol", false)
-local lmg_check = gui.Checkbox(dmg_selector, "lmg_check", "LMG", false)
-local hpistol_check = gui.Checkbox(dmg_selector, "hpistol_check", "Heavy Pistol", false)
-local asniper_check = gui.Checkbox(dmg_selector, "asniper_check", "Auto Sniper", false)
+local or_icon_texture = draw.CreateTexture(or_imgRGBA, or_imgWidth, or_imgHeight)
 
-local shared_or = gui.Slider(rage_gb, "shared_or", "Shared Override", 1, 1, 130)
-local zeus_or = gui.Slider(rage_gb, "zeus_or", "Zeus Override", 1, 1, 130)
-local sniper_or = gui.Slider(rage_gb, "sniper_or", "AWP Override", 1, 1, 130)
-local smg_or = gui.Slider(rage_gb, "smg_or", "SMG Override", 1, 1, 130)
-local shotgun_or = gui.Slider(rage_gb, "shotgun_or", "Shotgun Override", 1, 1, 130)
-local scout_or = gui.Slider(rage_gb, "scout_or", "Scout Override", 1, 1, 130)
-local rifle_or = gui.Slider(rage_gb, "rifle_or", "Rifle Override", 1, 1, 130)
-local pistol_or = gui.Slider(rage_gb, "pistol_or", "Pistol Override", 1, 1, 130)
-local lmg_or = gui.Slider(rage_gb, "lmg_or", "LMG Override", 1, 1, 130)
-local hpistol_or = gui.Slider(rage_gb, "hpistol_or", "Heavy pistol Override", 1, 1, 130)
-local asniper_or = gui.Slider(rage_gb, "asniper_or", "Auto sniper Override", 1, 1, 130)
+local dmg_settings_wnd = gui.Window("dmg_settings_wnd", "Minimum Damage Settings", 100, 100, 235, 150)
+dmg_settings_wnd:SetIcon(or_icon_texture, 0.5)
+dmg_settings_wnd:SetActive(false)
 
-local rage_aa_gb = gui.Groupbox(tab, "Anti-Aim", 225, 125, 200, 200)
+local dmg_or_gb = gui.Groupbox(tab, "Minimum Damage", 10, 317, 200, 200)
+local dmg_or = gui.Checkbox(dmg_or_gb, "dmg_or", "Damage Override", false)
+local wep_selector = gui.Multibox(dmg_settings_wnd, "")
+wep_selector:SetPosX(16.5); wep_selector:SetPosY(65)
+
+local dmg_selector = gui.Combobox(dmg_settings_wnd, "dmg_selector", "", unpack({"Shared", "Zeus", "AWP", "SMG", "Shotgun", "Scout", "Rifle", "Pistol", "LMG", "Heavy Pistol", "Autosniper"}))
+dmg_selector:SetPosX(16.5); dmg_selector:SetPosY(65)
+dmg_selector:SetInvisible(true)
+
+local active_tab = 0
+
+local dmg_wnd_tab1 = gui.Button(dmg_settings_wnd, "Weapon Select", function() wep_selector:SetInvisible(false); dmg_selector:SetInvisible(true); active_tab = 0; dmg_settings_wnd:SetHeight(150) end)
+dmg_wnd_tab1:SetPosX(5); dmg_wnd_tab1:SetPosY(5)
+dmg_wnd_tab1:SetWidth(225)
+
+local dmg_wnd_tab2 = gui.Button(dmg_settings_wnd, "Damage Settings", function() wep_selector:SetInvisible(true); dmg_selector:SetInvisible(false); active_tab = 1; dmg_settings_wnd:SetHeight(180) end)
+dmg_wnd_tab2:SetPosX(5); dmg_wnd_tab2:SetPosY(40)
+dmg_wnd_tab2:SetWidth(225)
+
+local dmg_settings = gui.Button(dmg_or_gb, "Settings", function() 
+    if dmg_settings_wnd:IsActive() then
+        dmg_settings_wnd:SetActive(false)
+    else
+        dmg_settings_wnd:SetActive(true)
+    end
+end)
+
+dmg_settings:SetWidth(168)
+
+local shared_check = gui.Checkbox(wep_selector, "shared_check", "Shared", false)
+local zeus_check = gui.Checkbox(wep_selector, "zeus_check", "Zeus", false)
+local sniper_check = gui.Checkbox(wep_selector, "sniper_check", "AWP", false)
+local smg_check = gui.Checkbox(wep_selector, "smg_check", "SMG", false)
+local shotgun_check = gui.Checkbox(wep_selector, "shotgun_check", "Shotgun", false)
+local scout_check = gui.Checkbox(wep_selector, "scout_check", "Scout", false)
+local rifle_check = gui.Checkbox(wep_selector, "rifle_check", "Rifle", false)
+local pistol_check = gui.Checkbox(wep_selector, "pistol_check", "Pistol", false)
+local lmg_check = gui.Checkbox(wep_selector, "lmg_check", "LMG", false)
+local hpistol_check = gui.Checkbox(wep_selector, "hpistol_check", "Heavy Pistol", false)
+local asniper_check = gui.Checkbox(wep_selector, "asniper_check", "Auto Sniper", false)
+
+local shared_or = gui.Slider(dmg_settings_wnd, "shared_or", "", 1, 1, 100); shared_or:SetPosX(16.5); shared_or:SetPosY(105)
+local zeus_or = gui.Slider(dmg_settings_wnd, "zeus_or", "", 1, 1, 100); zeus_or:SetPosX(16.5); zeus_or:SetPosY(105)
+local sniper_or = gui.Slider(dmg_settings_wnd, "sniper_or", "", 1, 1, 100); sniper_or:SetPosX(16.5); sniper_or:SetPosY(105)
+local smg_or = gui.Slider(dmg_settings_wnd, "smg_or", "", 1, 1, 100); smg_or:SetPosX(16.5); smg_or:SetPosY(105)
+local shotgun_or = gui.Slider(dmg_settings_wnd, "shotgun_or", "", 1, 1, 100); shotgun_or:SetPosX(16.5); shotgun_or:SetPosY(105)
+local scout_or = gui.Slider(dmg_settings_wnd, "scout_or", "", 1, 1, 100); scout_or:SetPosX(16.5); scout_or:SetPosY(105)
+local rifle_or = gui.Slider(dmg_settings_wnd, "rifle_or", "", 1, 1, 100); rifle_or:SetPosX(16.5); rifle_or:SetPosY(105)
+local pistol_or = gui.Slider(dmg_settings_wnd, "pistol_or", "", 1, 1, 100); pistol_or:SetPosX(16.5); pistol_or:SetPosY(105)
+local lmg_or = gui.Slider(dmg_settings_wnd, "lmg_or", "", 1, 1, 100); lmg_or:SetPosX(16.5); lmg_or:SetPosY(105)
+local hpistol_or = gui.Slider(dmg_settings_wnd, "hpistol_or", "", 1, 1, 100); hpistol_or:SetPosX(16.5); hpistol_or:SetPosY(105)
+local asniper_or = gui.Slider(dmg_settings_wnd, "asniper_or", "", 1, 1, 100); asniper_or:SetPosX(16.5); asniper_or:SetPosY(105)
+
+local function or_check()
+    if active_tab == 1 then
+        if dmg_selector:GetValue() == 0 then
+
+            shared_or:SetInvisible(false)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true) 
+
+        elseif dmg_selector:GetValue() == 1 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(false)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 2 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(false)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 3 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(false)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 4 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(false)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 5 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(false)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 6 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(false)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 7 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(false)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 8 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(false)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 9 then
+
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(false)
+            asniper_or:SetInvisible(true)
+
+        elseif dmg_selector:GetValue() == 10 then
+        
+            shared_or:SetInvisible(true)
+            zeus_or:SetInvisible(true)
+            sniper_or:SetInvisible(true)
+            smg_or:SetInvisible(true)
+            shotgun_or:SetInvisible(true)
+            scout_or:SetInvisible(true)
+            rifle_or:SetInvisible(true)
+            pistol_or:SetInvisible(true)
+            lmg_or:SetInvisible(true)
+            hpistol_or:SetInvisible(true)
+            asniper_or:SetInvisible(false)
+
+        end
+    else
+        shared_or:SetInvisible(true)
+        zeus_or:SetInvisible(true)
+        sniper_or:SetInvisible(true)
+        smg_or:SetInvisible(true)
+        shotgun_or:SetInvisible(true)
+        scout_or:SetInvisible(true)
+        rifle_or:SetInvisible(true)
+        pistol_or:SetInvisible(true)
+        lmg_or:SetInvisible(true)
+        hpistol_or:SetInvisible(true)
+        asniper_or:SetInvisible(true)
+    end
+end
+
+-- rage aa
+local rage_aa_gb = gui.Groupbox(tab, "Anti-Aim", 225, 125, 397, 200)
 local inverter_kb = gui.Keybox(rage_aa_gb, "inverter_kb", "Inverter (press)", 0)
 local freestand_kb = gui.Keybox(rage_aa_gb, "freestand_kb", "Freestanding (hold)", 0)
 local legitaa_kb = gui.Keybox(rage_aa_gb, "legitaa_kb", "Legit Anti-Aim (hold)", 0)
@@ -87,18 +320,13 @@ local roll_on_walk = gui.Checkbox(rage_aa_gb, "roll_on_walk", "Roll Angle", 0)
 local roll_on_slowwalk = gui.Checkbox(rage_aa_gb, "roll_on_slowwalk", "Roll Angle", 0)
 local roll_in_air = gui.Checkbox(rage_aa_gb, "roll_in_air", "Roll Angle", 0)
 
-local antibrute_gb = gui.Groupbox(tab, "Anti-Bruteforce", 440, 125, 185, 200)
+local antibrute_gb = gui.Groupbox(tab, "Anti-Bruteforce", 10, 460, 200, 200)
 local antibrute_mode = gui.Combobox(antibrute_gb, "antibrute_mode", "Mode", unpack({"Off", "Standard", "Stages"}))
 local antibrute_stage1 = gui.Slider(antibrute_gb, "antibrute_stage1", "Stage 1", 0, -58, 58)
 local antibrute_stage2 = gui.Slider(antibrute_gb, "antibrute_stage2", "Stage 2", 0, -58, 58)
 local antibrute_stage3 = gui.Slider(antibrute_gb, "antibrute_stage3", "Stage 3", 0, -58, 58)
 local antibrute_stage4 = gui.Slider(antibrute_gb, "antibrute_stage4", "Stage 4", 0, -58, 58)
 local antibrute_stage5 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 5", 0, -58, 58)
---[[local antibrute_stage6 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 6", 0, -58, 58)
-local antibrute_stage7 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 7", 0, -58, 58)
-local antibrute_stage8 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 8", 0, -58, 58)
-local antibrute_stage9 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 9", 0, -58, 58)
-local antibrute_stage10 = gui.Slider(antibrute_gb, "antibrute_stage5", "Stage 10", 0, -58, 58)]]
 
 local function cond_ui()
     if enable_conditions_sw:GetValue() then
@@ -266,9 +494,9 @@ local r8_fix = gui.Checkbox(misc_gb, "r8_fix", "Revolver dump fix", false)
 gui.Text(misc_gb, "NOTE: High ping and exploits\n\nmay also cause R8 to dump!")
 local aspectratio_slider = gui.Slider(misc_gb, "aspectratio_slider", "Aspect Ratio", 0, 0, 10, 0.1)
 
-local rq_btn = gui.Button(misc_gb, "Rage Quit!", function() client.Command("quit", true) end) -- very useful feature
+--local rq_btn = gui.Button(misc_gb, "Rage Quit!", function() client.Command("quit", true) end) -- very useful feature
 
-local misc_vis_gb = gui.Groupbox(tab, "Visuals", 225, 125, 200, 200)
+local misc_vis_gb = gui.Groupbox(tab, "Visuals", 225, 125, 397, 200)
 
 -- colors
 local fake_arrow_col = gui.ColorPicker(misc_vis_gb, "fake_arrow_col", "Fake Arrow", 71, 143, 86, 255)
@@ -278,30 +506,101 @@ local items_col = gui.ColorPicker(misc_vis_gb, "items_col", "Items", 118, 181, 1
 
 -- mess
 local desync_arrows_cb = gui.Checkbox(misc_vis_gb, "desync_arrows_cb", "Desync Arrows", false)
-local misc_vis_indicators = gui.Combobox(misc_vis_gb, "misc_vis_indicators", "Indicators Style", unpack({"Off", "Under Crosshair", "i will add more soon"}))
+local misc_vis_indicators = gui.Combobox(misc_vis_gb, "misc_vis_indicators", "Indicators Style", unpack({"Off", "Under Crosshair"}))
 local misc_vis_indicators_selector = gui.Multibox(misc_vis_gb, "Select Indicators")
 local abfov_ind = gui.Checkbox(misc_vis_indicators_selector, "abfov_ind", "Aim FOV", false)
+local dside_ind = gui.Checkbox(misc_vis_indicators_selector, "dside_ind", "Desync Side", false)
 local autowall_ind = gui.Checkbox(misc_vis_indicators_selector, "autowall_ind", "Autowall", false)
 local dmg_ind = gui.Checkbox(misc_vis_indicators_selector, "dmg_ind", "Minimum Damage", false)
 local dt_ind = gui.Checkbox(misc_vis_indicators_selector, "dt_ind", "Double Tap", false)
 local hs_ind = gui.Checkbox(misc_vis_indicators_selector, "hs_ind", "Hide Shots", false)
 local fd_ind = gui.Checkbox(misc_vis_indicators_selector, "fd_ind", "Fakeduck", false)
 
-local misc_autobuy_gb = gui.Groupbox(tab, "Autobuy", 440, 125, 185, 200)
+local misc_autobuy_gb = gui.Groupbox(tab, "Autobuy", 10, 360, 200, 200)
 local autobuy_sw = gui.Checkbox(misc_autobuy_gb, "autobuy_sw", "Master Switch", false)
 
+local abuy_svg_icon_data = http.Get("https://raw.githubusercontent.com/olexon/Absinthe/main/svg/autobuy_icon.svg")
+local abuy_imgRGBA, abuy_imgWidth, abuy_imgHeight = common.RasterizeSVG(abuy_svg_icon_data)
+
+local abuy_icon_texture = draw.CreateTexture(abuy_imgRGBA, abuy_imgWidth, abuy_imgHeight)
+
+local autobuy_wnd = gui.Window("autobuy_wnd", "Autobuy", 350, 100, 235, 280)
+autobuy_wnd:SetIcon(abuy_icon_texture, 0.5)
+autobuy_wnd:SetActive(false)
+
 -- primary
-local primary_wep = gui.Combobox(misc_autobuy_gb, "primary_wep", "Primary Weapon", unpack({"None", "Awp", "Ssg08", "Scar20/G3SG1"}))
+local primary_wep = gui.Combobox(autobuy_wnd, "primary_wep", "Primary Weapon", unpack({"None", "Awp", "Ssg08", "Scar20/G3SG1"})); primary_wep:SetPosX(16.5); primary_wep:SetPosY(85)
 
 -- secondary
-local secondary_wep = gui.Combobox(misc_autobuy_gb, "secondary_wep", "Secondary Weapon", unpack({"None", "Deagle/Revolver", "Five-Seven/Tec-9", "Dual Berettas"}))
+local secondary_wep = gui.Combobox(autobuy_wnd, "secondary_wep", "Secondary Weapon", unpack({"None", "Deagle/Revolver", "Five-Seven/Tec-9", "Dual Berettas"})); secondary_wep:SetPosX(16.5); secondary_wep:SetPosY(140)
 
 -- misc
-local misc_wep = gui.Multibox(misc_autobuy_gb, "Other Equipment")
+local misc_wep = gui.Multibox(autobuy_wnd, "Other Equipment"); misc_wep:SetPosX(16.5); misc_wep:SetPosY(195)
 local kev_wep = gui.Checkbox(misc_wep, "kev_wep", "Kevlar and Helment", false)
 local nade_wep = gui.Checkbox(misc_wep, "nade_wep", "Grenades", false)
 local def_wep = gui.Checkbox(misc_wep, "def_wep", "Defuse/Rescue Kit", false)
 local taser_wep = gui.Checkbox(misc_wep, "taser_wep", "Taser", false)
+
+-- Autobuy Override
+local autobuy_override_cb = gui.Checkbox(autobuy_wnd, "override_cb", "Override Autobuy", false); autobuy_override_cb:SetPosX(16.5); autobuy_override_cb:SetPosY(85)
+
+-- primary
+local primary_wep_or = gui.Combobox(autobuy_wnd, "primary_wep_or", "Primary Weapon", unpack({"None", "Awp", "Ssg08", "Scar20/G3SG1"})); primary_wep_or:SetPosX(16.5); primary_wep_or:SetPosY(120)
+
+-- secondary
+local secondary_wep_or = gui.Combobox(autobuy_wnd, "secondary_wep_or", "Secondary Weapon", unpack({"None", "Deagle/Revolver", "Five-Seven/Tec-9", "Dual Berettas"})); secondary_wep_or:SetPosX(16.5); secondary_wep_or:SetPosY(175)
+
+-- misc
+local misc_wep_or = gui.Multibox(autobuy_wnd, "Other Equipment"); misc_wep_or:SetPosX(16.5); misc_wep_or:SetPosY(230)
+local kev_wep_or = gui.Checkbox(misc_wep_or, "kev_wep_or", "Kevlar and Helment", false)
+local nade_wep_or = gui.Checkbox(misc_wep_or, "nade_wep_or", "Grenades", false)
+local def_wep_or = gui.Checkbox(misc_wep_or, "def_wep_or", "Defuse/Rescue Kit", false)
+local taser_wep_or = gui.Checkbox(misc_wep_or, "taser_wep_or", "Taser", false)
+
+primary_wep_or:SetInvisible(true) 
+secondary_wep_or:SetInvisible(true) 
+misc_wep_or:SetInvisible(true)
+autobuy_override_cb:SetInvisible(true)
+
+local autobuy_wnd_tab1 = gui.Button(autobuy_wnd, "Regular", function() 
+    primary_wep:SetInvisible(false) 
+    secondary_wep:SetInvisible(false) 
+    misc_wep:SetInvisible(false)
+
+    primary_wep_or:SetInvisible(true) 
+    secondary_wep_or:SetInvisible(true) 
+    misc_wep_or:SetInvisible(true)
+    autobuy_override_cb:SetInvisible(true)
+
+    autobuy_wnd:SetHeight(280)
+end)
+autobuy_wnd_tab1:SetPosX(5); autobuy_wnd_tab1:SetPosY(5)
+autobuy_wnd_tab1:SetWidth(225)
+
+local autobuy_wnd_tab2 = gui.Button(autobuy_wnd, "Override", function() 
+    primary_wep:SetInvisible(true) 
+    secondary_wep:SetInvisible(true) 
+    misc_wep:SetInvisible(true)
+
+    primary_wep_or:SetInvisible(false) 
+    secondary_wep_or:SetInvisible(false) 
+    misc_wep_or:SetInvisible(false)
+    autobuy_override_cb:SetInvisible(false)
+
+    autobuy_wnd:SetHeight(315)
+end)
+autobuy_wnd_tab2:SetPosX(5); autobuy_wnd_tab2:SetPosY(40)
+autobuy_wnd_tab2:SetWidth(225)
+
+local autobuy_wnd_toggle = gui.Button(misc_autobuy_gb, "Settings", function()
+    if autobuy_wnd:IsActive() then
+        autobuy_wnd:SetActive(false)
+    else
+        autobuy_wnd:SetActive(true)
+    end
+end)
+
+autobuy_wnd_toggle:SetWidth(168)
 
 -- set those to invisible ootb
 semirage_gb:SetInvisible(true)
@@ -315,6 +614,7 @@ local rage_subtab = gui.Button(tab, "RAGE", function()
     rage_gb:SetInvisible(false)
     rage_aa_gb:SetInvisible(false)
     antibrute_gb:SetInvisible(false)
+    dmg_or_gb:SetInvisible(false)
 
     semirage_gb:SetInvisible(true)
     legit_aa_gb:SetInvisible(true)
@@ -331,6 +631,7 @@ local semirage_subtab = gui.Button(tab, "SEMI-RAGE", function()
     rage_gb:SetInvisible(true)
     rage_aa_gb:SetInvisible(true)
     antibrute_gb:SetInvisible(true)
+    dmg_or_gb:SetInvisible(true)
 
     semirage_gb:SetInvisible(false)
     legit_aa_gb:SetInvisible(false)
@@ -347,6 +648,7 @@ local misc_subtab = gui.Button(tab, "MISC", function()
     rage_gb:SetInvisible(true)
     rage_aa_gb:SetInvisible(true)
     antibrute_gb:SetInvisible(true)
+    dmg_or_gb:SetInvisible(true)
 
     semirage_gb:SetInvisible(true)
     legit_aa_gb:SetInvisible(true)
@@ -958,7 +1260,6 @@ local backup_legitaa = {
     pitch = nil,
     targets = nil
 }
-
 local function legit_aa_on_hold()
     if rage_sw:GetValue() then
         if legitaa_kb:GetValue() ~= 0 and input.IsButtonDown(legitaa_kb:GetValue()) then
@@ -990,49 +1291,64 @@ local function legit_aa_on_hold()
 end
 
 local stage = 0
-local function anti_brute(event) -- still requires some love
+local function anti_brute(event)
     local localplayer = entities.GetLocalPlayer()
 
     if not localplayer or not localplayer:IsAlive() then 
+        if stage ~= 0 then
+            stage = 0
+        end
+
         return
     end
 
     if rage_sw:GetValue() then
         if event then
-            if antibrute_mode:GetValue() == 1 and event:GetName() ~= nil and event:GetName() == "bullet_impact" and client.GetLocalPlayerIndex() ~= client.GetPlayerIndexByUserID(event:GetInt("userid")) then
-                gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
-            end
-            if antibrute_mode:GetValue() == 2 and event:GetName() ~= nil and event:GetName() == "bullet_impact" and client.GetLocalPlayerIndex() ~= client.GetPlayerIndexByUserID(event:GetInt("userid")) then
-                if stage == 0 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage1:GetValue())
-                    stage = stage + 1
-                elseif stage == 1 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage2:GetValue())
-                    stage = stage + 1
-                elseif stage == 2 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage3:GetValue())
-                    stage = stage + 1
-                elseif stage == 3 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage4:GetValue())
-                    stage = stage + 1
-                elseif stage == 4 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage5:GetValue())
-                    stage = 0
-                --[[elseif stage == 5 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage6:GetValue())
-                    stage = stage + 1
-                elseif stage == 6 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage7:GetValue())
-                    stage = stage + 1
-                elseif stage == 7 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage8:GetValue())
-                    stage = stage + 1
-                elseif stage == 8 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage9:GetValue())
-                    stage = stage + 1
-                elseif stage == 9 then
-                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage10:GetValue())
-                    stage = 0]]
+
+            if event:GetName() == nil or client.GetLocalPlayerIndex() == client.GetPlayerIndexByUserID(event:GetInt("userid")) then return end
+            local attacker_ent = entities.GetByIndex(client.GetPlayerIndexByUserID(event:GetInt("userid")))
+            
+            if entities.GetLocalPlayer():GetTeamNumber() == attacker_ent:GetTeamNumber() then return end
+
+            if event:GetName() == "bullet_impact" then
+                if antibrute_mode:GetValue() == 1 then
+                    gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
+                end
+
+                if antibrute_mode:GetValue() == 2 then
+                    if stage == 0 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage1:GetValue())
+                        stage = stage + 1
+                    elseif stage == 1 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage2:GetValue())
+                        stage = stage + 1
+                    elseif stage == 2 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage3:GetValue())
+                        stage = stage + 1
+                    elseif stage == 3 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage4:GetValue())
+                        stage = stage + 1
+                    elseif stage == 4 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage5:GetValue())
+                        stage = 0
+                    --[[elseif stage == 5 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage6:GetValue())
+                        stage = stage + 1
+                    elseif stage == 6 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage7:GetValue())
+                        stage = stage + 1
+                    elseif stage == 7 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage8:GetValue())
+                        stage = stage + 1
+                    elseif stage == 8 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage9:GetValue())
+                        stage = stage + 1
+                    elseif stage == 9 then
+                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage10:GetValue())
+                        stage = 0]]
+                    end
+
+                    --print(stage)
                 end
             end
         end
@@ -1174,8 +1490,8 @@ end
 
 -- MISC/VISUALS
 local screen_w, screen_h = draw.GetScreenSize()
-local Font_undercross = draw.CreateFont("Tahoma Bold", 13)
-local font_undercross_items = draw.CreateFont("Tahoma Bold", 11)
+local Font_undercross = draw.CreateFont("Verdana", 13, 700)
+local font_undercross_items = draw.CreateFont("Verdana", 12, 700)
 
 local function desync_arrows()
     local lp = entities.GetLocalPlayer()
@@ -1240,24 +1556,23 @@ local function indicators()
     localplayer_weaponid = localplayer:GetWeaponID()
     --print(localplayer:GetWeaponType())
 
-    local text = "Absinthe"
     local isscoped = localplayer:GetPropBool("m_bIsScoped")
     local x_pos = 0
 
     if isscoped then
-        x_pos = (text:len()-28)
+        x_pos = -38
     else
-        x_pos = (text:len() * 2.5)
+        x_pos = 0
     end
 
 
     local item_pos = {
-        [1] = 40,
-        [2] = 55,
-        [3] = 70,
-        [4] = 85,   
-        [5] = 100,
-        [5] = 115,
+        [1] = 35,
+        [2] = 47,
+        [3] = 59,
+        [4] = 71,   
+        [5] = 83,
+        [6] = 95,
     }
 
     local item_idx = 0
@@ -1266,51 +1581,108 @@ local function indicators()
         draw.Color(indicator_col:GetValue())
         draw.SetFont(Font_undercross)
 
-        draw.Text(screen_w/2-x_pos-2, screen_h/2+25, text)
+        draw.TextShadow(screen_w/2-26-x_pos,screen_h/2+23, "Absinthe")
 
         draw.Color(items_col:GetValue())
         draw.SetFont(font_undercross_items)
 
         if abfov_ind:GetValue() then
             item_idx = item_idx + 1
+            local adjustment = nil
 
-            draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "fov: " .. gui.GetValue("rbot.aim.target.fov"))
+            local fov_text = "fov: " .. gui.GetValue("rbot.aim.target.fov")
+
+            if fov_text:len() == 7 then
+                adjustment = 4
+            elseif fov_text:len() == 6 then
+                adjustment = 6
+            else
+                adjustment = 0
+            end
+
+            draw.TextShadow((screen_w/2-26+fov_text:len()+adjustment)-x_pos,screen_h/2+item_pos[item_idx], fov_text)
         end
         
         if localplayer:GetWeaponType() ~= nil and localplayer:GetWeaponType() ~= 0 and localplayer:GetWeaponType() ~= 7 and localplayer:GetWeaponType() ~= 9 and localplayer:GetWeaponType() ~= 11 then
             if dmg_ind:GetValue() then
                 item_idx = item_idx + 1
+                local dmg_value = nil
+                local dmg_text = nil
+
+                dmg_value = gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamage")
 
                 if gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp") == 0 then
-                    draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "dmg: " .. gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamage"))
+                    dmg_text = "dmg: " .. dmg_value
                 else
-                    draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "dmg: " .. gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamage") .. "+" .. gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp"))
+                    dmg_text = "dmg: " .. dmg_value .. "+" .. gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp")
                 end
+
+                local im_fucking_done = dmg_text:len()
+
+                if dmg_text:len() > 7 then
+                    im_fucking_done = -dmg_text:len() + 8.5
+                end
+                
+                draw.TextShadow((screen_w/2-26+im_fucking_done)-x_pos,screen_h/2+item_pos[item_idx], dmg_text)
             end
 
             if autowall_ind:GetValue() and gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".autowall") then
                 item_idx = item_idx + 1
+
+                local aw_text = "autowall" -- i feel like its still a bit off
     
-                draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "autowall")
+                draw.TextShadow((screen_w/2-26+aw_text:len()-2.5)-x_pos,screen_h/2+item_pos[item_idx], aw_text)
             end
 
             if dt_ind:GetValue() and string.match(gui.GetValue("rbot.accuracy.attack." .. weapons_list[localplayer_weaponid] .. ".fire"), "Defensive Warp Fire") then
                 item_idx = item_idx + 1
-    
-                draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "doubletap")
+                
+                local dt_text = "doubletap"
+
+                draw.TextShadow((screen_w/2-26+dt_text:len()-6)-x_pos,screen_h/2+item_pos[item_idx], dt_text)
             end
     
             if hs_ind:GetValue() and string.match(gui.GetValue("rbot.accuracy.attack." .. weapons_list[localplayer_weaponid] .. ".fire"), "Shift Fire") then
                 item_idx = item_idx + 1
+
+                local hs_text = "hideshots"
     
-                draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "hideshots")
+                draw.TextShadow((screen_w/2-26+hs_text:len()-5)-x_pos,screen_h/2+item_pos[item_idx], hs_text)
             end
         end
         
         if fd_ind:GetValue() and cheat.IsFakeDucking() then
             item_idx = item_idx + 1
 
-            draw.Text(screen_w/2-x_pos-2, screen_h/2+item_pos[item_idx], "fakeduck")
+            local fd_text = "fakeduck"
+
+            draw.TextShadow((screen_w/2-26+fd_text:len()-2.5)-x_pos,screen_h/2+item_pos[item_idx], fd_text)
+        end
+
+        if dside_ind:GetValue() then
+            item_idx = item_idx + 1
+
+            local str_table = {}
+            for str in string.gmatch(gui.GetValue("rbot.antiaim.base"), "([^".."%s".."]+)") do 
+                table.insert(str_table, str)
+            end
+    
+            local base_yaw = str_table[1]:gsub("\"", "") -- doing anything yaw related in aimware is pain in the ass change my mind
+            base_yaw = tonumber(base_yaw)
+
+            if base_yaw == 0 or legitaa_kb:GetValue() ~= 0 and input.IsButtonDown(legitaa_kb:GetValue()) then
+                if gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+                    draw.TextShadow((screen_w/2-26+17.5)-x_pos,screen_h/2+item_pos[item_idx], "Right")
+                else
+                    draw.TextShadow((screen_w/2-26+14.5)-x_pos,screen_h/2+item_pos[item_idx], "Left")
+                end   
+            else
+                if gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+                    draw.TextShadow((screen_w/2-26+17.5)-x_pos,screen_h/2+item_pos[item_idx], "Left")
+                else
+                    draw.TextShadow((screen_w/2-26+14.5)-x_pos,screen_h/2+item_pos[item_idx], "Right")
+                end   
+            end
         end
         
     end
@@ -1319,41 +1691,80 @@ end
 local function autobuy(event)
     if autobuy_sw:GetValue() then
         if event:GetName() == "round_prestart" then
-            -- primary
-            if primary_wep:GetValue() ~= 0 then
-                if primary_wep:GetValue() == 1 then
-                    client.Command("buy awp", true)
-                elseif primary_wep:GetValue() == 2 then
-                    client.Command("buy ssg08", true)
-                elseif primary_wep:GetValue() == 3 then -- this could be else but i made it elseif in case i would like to add more weapons to autobuy
-                    client.Command("buy scar20", true)
+            if autobuy_override_cb:GetValue() then
+                -- primary override
+                if primary_wep_or:GetValue() ~= 0 then
+                    if primary_wep_or:GetValue() == 1 then
+                        client.Command("buy awp", true)
+                    elseif primary_wep_or:GetValue() == 2 then
+                        client.Command("buy ssg08", true)
+                    elseif primary_wep_or:GetValue() == 3 then -- this could be else but i made it elseif in case i would like to add more weapons to autobuy
+                        client.Command("buy scar20", true)
+                    end
                 end
-            end
-            -- secondary
-            if secondary_wep:GetValue() ~= 0 then
-                if secondary_wep:GetValue() == 1 then
-                    client.Command("buy deagle", true)
-                elseif secondary_wep:GetValue() == 2 then
-                    client.Command("buy fiveseven", true)
-                elseif secondary_wep:GetValue() == 3 then -- same here
-                    client.Command("buy elite", true)
+                -- secondary override
+                if secondary_wep_or:GetValue() ~= 0 then
+                    if secondary_wep_or:GetValue() == 1 then
+                        client.Command("buy deagle", true)
+                    elseif secondary_wep_or:GetValue() == 2 then
+                        client.Command("buy fiveseven", true)
+                    elseif secondary_wep_or:GetValue() == 3 then -- same here
+                        client.Command("buy elite", true)
+                    end
                 end
-            end
-            -- misc
-            if kev_wep:GetValue() then
-                client.Command("buy vest; buy vesthelm", true)
-            end
+                -- misc
+                if kev_wep_or:GetValue() then
+                    client.Command("buy vest; buy vesthelm", true)
+                end
 
-            if nade_wep:GetValue() then
-                client.Command("buy molotov; buy hegrenade; buy smokegrenade", true)
-            end
+                if nade_wep_or:GetValue() then
+                    client.Command("buy molotov; buy hegrenade; buy smokegrenade", true)
+                end
 
-            if def_wep:GetValue() then
-                client.Command("buy defuser", true)
-            end
+                if def_wep_or:GetValue() then
+                    client.Command("buy defuser", true)
+                end
 
-            if taser_wep:GetValue() then
-                client.Command("buy taser", true)
+                if taser_wep_or:GetValue() then
+                    client.Command("buy taser", true)
+                end
+            else
+                -- primary
+                if primary_wep:GetValue() ~= 0 then
+                    if primary_wep:GetValue() == 1 then
+                        client.Command("buy awp", true)
+                    elseif primary_wep:GetValue() == 2 then
+                        client.Command("buy ssg08", true)
+                    elseif primary_wep:GetValue() == 3 then -- this could be else but i made it elseif in case i would like to add more weapons to autobuy
+                        client.Command("buy scar20", true)
+                    end
+                end
+                -- secondary
+                if secondary_wep:GetValue() ~= 0 then
+                    if secondary_wep:GetValue() == 1 then
+                        client.Command("buy deagle", true)
+                    elseif secondary_wep:GetValue() == 2 then
+                        client.Command("buy fiveseven", true)
+                    elseif secondary_wep:GetValue() == 3 then -- same here
+                        client.Command("buy elite", true)
+                    end
+                end
+                -- misc
+                if kev_wep:GetValue() then
+                    client.Command("buy vest; buy vesthelm", true)
+                end
+
+                if nade_wep:GetValue() then
+                    client.Command("buy molotov; buy hegrenade; buy smokegrenade", true)
+                end
+
+                if def_wep:GetValue() then
+                    client.Command("buy defuser", true)
+                end
+
+                if taser_wep:GetValue() then
+                    client.Command("buy taser", true)
+                end
             end
         end
     end
@@ -1415,7 +1826,7 @@ local function sw_checks()
 
     -- rage tab
     if rage_sw:GetValue() == true then
-        dmg_selector:SetDisabled(false)
+        --dmg_selector:SetDisabled(false)
         dmg_or:SetDisabled(false)
         cond_cb:SetDisabled(false)
         inverter_kb:SetDisabled(false)
@@ -1447,7 +1858,7 @@ local function sw_checks()
         antibrute_stage3:SetDisabled(false)
         antibrute_stage4:SetDisabled(false)
         antibrute_stage5:SetDisabled(false)
-        shared_or:SetDisabled(false)
+        --[[shared_or:SetDisabled(false)
         zeus_or:SetDisabled(false)
         sniper_or:SetDisabled(false)
         smg_or:SetDisabled(false)
@@ -1457,13 +1868,15 @@ local function sw_checks()
         pistol_or:SetDisabled(false)
         lmg_or:SetDisabled(false)
         hpistol_or:SetDisabled(false)
-        asniper_or:SetDisabled(false)
+        asniper_or:SetDisabled(false)]]
         lby_flick_sw:SetDisabled(false)
         lby_flick_angle:SetDisabled(false)
         lby_flick_freq:SetDisabled(false)
         enable_conditions_sw:SetDisabled(false)
+        dmg_settings:SetDisabled(false)
+        --dmg_settings_wnd:SetActive(false)
     else
-        dmg_selector:SetDisabled(true)
+        --dmg_selector:SetDisabled(true)
         dmg_or:SetDisabled(true)
         cond_cb:SetDisabled(true)
         inverter_kb:SetDisabled(true)
@@ -1495,7 +1908,7 @@ local function sw_checks()
         antibrute_stage3:SetDisabled(true)
         antibrute_stage4:SetDisabled(true)
         antibrute_stage5:SetDisabled(true)
-        shared_or:SetDisabled(true)
+        --[[shared_or:SetDisabled(true)
         zeus_or:SetDisabled(true)
         sniper_or:SetDisabled(true)
         smg_or:SetDisabled(true)
@@ -1505,67 +1918,13 @@ local function sw_checks()
         pistol_or:SetDisabled(true)
         lmg_or:SetDisabled(true)
         hpistol_or:SetDisabled(true)
-        asniper_or:SetDisabled(true)
+        asniper_or:SetDisabled(true)]]
         lby_flick_sw:SetDisabled(true)
         lby_flick_angle:SetDisabled(true)
         lby_flick_freq:SetDisabled(true)
         enable_conditions_sw:SetDisabled(true)
-    end
-
-    if shared_check:GetValue() then
-        shared_or:SetInvisible(false)
-    else
-        shared_or:SetInvisible(true)
-    end
-    if zeus_check:GetValue() then
-        zeus_or:SetInvisible(false)
-    else
-        zeus_or:SetInvisible(true)
-    end
-    if sniper_check:GetValue() then
-        sniper_or:SetInvisible(false)
-    else
-        sniper_or:SetInvisible(true)
-    end
-    if smg_check:GetValue() then
-        smg_or:SetInvisible(false)
-    else
-        smg_or:SetInvisible(true)
-    end
-    if shotgun_check:GetValue() then
-        shotgun_or:SetInvisible(false)
-    else
-        shotgun_or:SetInvisible(true)
-    end
-    if scout_check:GetValue() then
-        scout_or:SetInvisible(false)
-    else
-        scout_or:SetInvisible(true)
-    end
-    if rifle_check:GetValue() then
-        rifle_or:SetInvisible(false)
-    else
-        rifle_or:SetInvisible(true)
-    end
-    if pistol_check:GetValue() then
-        pistol_or:SetInvisible(false)
-    else
-        pistol_or:SetInvisible(true)
-    end
-    if lmg_check:GetValue() then
-        lmg_or:SetInvisible(false)
-    else
-        lmg_or:SetInvisible(true)
-    end
-    if hpistol_check:GetValue() then
-        hpistol_or:SetInvisible(false)
-    else
-        hpistol_or:SetInvisible(true)
-    end
-    if asniper_check:GetValue() then
-        asniper_or:SetInvisible(false)
-    else
-        asniper_or:SetInvisible(true)
+        dmg_settings:SetDisabled(true)
+        dmg_settings_wnd:SetActive(false)
     end
 
     if lby_flick_sw:GetValue() then
@@ -1613,6 +1972,14 @@ local function sw_checks()
 
 end
 
+local function windows_handler()
+    local cheat_menu = gui.Reference("Menu")
+    if not cheat_menu:IsActive() then
+        dmg_settings_wnd:SetActive(false)
+        autobuy_wnd:SetActive(false)
+    end
+end
+
 -- resets
 local backup_reset = gui.Button(misc_gb, "Reset backup states", function() 
     legitaa_kb:SetValue(0)
@@ -1628,7 +1995,7 @@ local backup_reset = gui.Button(misc_gb, "Reset backup states", function()
     backup_r8.fakelatency = nil
 
     print("reset successful, you can now re-enable your functions or reload your config")
-end)
+end) backup_reset:SetWidth(168)
 
 client.AllowListener("bullet_impact")
 callbacks.Register("FireGameEvent", anti_brute)
@@ -1638,6 +2005,8 @@ callbacks.Register("FireGameEvent", autobuy)
 
 callbacks.Register("Draw", function() 
     -- ui elements and checks
+    windows_handler()
+    or_check()
     sw_checks()
     cond_ui()
 
