@@ -23,3 +23,6 @@
 * Anti bruteforce stages now reset on death
 * Anti bruteforce now checks if bullet was fired by enemy
 * Script now checks for a newer version on load and notifies user if there is one
+
+[1/25/2023] BETA v0.5
+* Removed version checking as it was causing issues for some users
