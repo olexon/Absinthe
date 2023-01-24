@@ -8,9 +8,16 @@
     https://aimware.net/forum/thread/158191
 ]]
 
-local lua_ver = 0.5
+local lua_ver = "0.5"
 
-local latest_ver = tonumber(http.Get("https://github.com/olexon/Absinthe/raw/main/latest_ver"))
+--[[local latest_ver = http.Get("https://github.com/olexon/Absinthe/raw/main/latest_ver")
+
+if latest_ver:len() > 5 or latest_ver:len() < 3 then -- to aviod errors lol
+    latest_ver = 0.0
+    print("There was an error while getting latest script version")
+else
+    latest_ver = tonumber(latest_ver)
+end
 
 if lua_ver < latest_ver then
     local new_ver_svg_icon_data = http.Get("https://github.com/olexon/Absinthe/raw/main/svg/new_ver_icon.svg")
@@ -20,22 +27,21 @@ if lua_ver < latest_ver then
     local new_version_wnd = gui.Window("new_version_wnd", "New version available!", 0, 0, 270, 150); new_version_wnd:SetIcon(new_ver_icon_texture, 0.5)
     gui.Text(new_version_wnd, "New version of Absinthe lua is available!\n\nYou can re-download lua from Aimware forum\n\nor click \"OK\" and keep using this version")
     local ok_button = gui.Button(new_version_wnd, "OK", function() new_version_wnd:SetActive(false) end); ok_button:SetWidth(238)
-end
+end]]
 
 local rb_ref = gui.Reference("RAGEBOT")
 local tab = gui.Tab(rb_ref, "absinthe", "Absinthe")
 
-local lua_version_text = nil
 local welcum_gb = gui.Groupbox(tab, "Welcome " .. cheat.GetUserName() .. "!", 10, 10, 200, 200)
 gui.Text(welcum_gb, "You are currently using Absinthe")
 
-if lua_ver < latest_ver then
+--[[if lua_ver < latest_ver then
     lua_version_text = lua_ver .. " [Latest " .. latest_ver .. "]"
 else
     lua_version_text = lua_ver
-end
+end]]
 
-gui.Text(welcum_gb, "Version " .. lua_version_text)
+gui.Text(welcum_gb, "Version " .. lua_ver)
 
 
 -- rage group
