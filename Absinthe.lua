@@ -1619,8 +1619,14 @@ local function indicators()
 
                 local im_fucking_done = dmg_text:len()
 
-                if dmg_text:len() > 7 then
+                if dmg_text:len() > 8 then -- this is fucking retarded
                     im_fucking_done = -dmg_text:len() + 8.5
+                elseif dmg_text:len() == 8 then
+                    im_fucking_done = 4
+                elseif dmg_text:len() == 7 then
+                    im_fucking_done = 7
+                elseif dmg_text:len() == 6 then
+                    im_fucking_done = 10
                 end
                 
                 draw.TextShadow((screen_w/2-26+im_fucking_done)-x_pos,screen_h/2+item_pos[item_idx], dmg_text)
