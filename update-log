@@ -26,3 +26,6 @@
 
 [1/25/2023] BETA v0.5
 * Removed version checking as it was causing issues for some users
+
+[1/30/2023] BETA v0.5
+* Removed other functions that potentially caused errors
