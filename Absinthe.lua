@@ -8,41 +8,12 @@
     https://aimware.net/forum/thread/158191
 ]]
 
-local lua_ver = "0.5"
-
---[[local latest_ver = http.Get("https://github.com/olexon/Absinthe/raw/main/latest_ver")
-
-if latest_ver:len() > 5 or latest_ver:len() < 3 then -- to aviod errors lol
-    latest_ver = 0.0
-    print("There was an error while getting latest script version")
-else
-    latest_ver = tonumber(latest_ver)
-end
-
-if lua_ver < latest_ver then
-    local new_ver_svg_icon_data = http.Get("https://github.com/olexon/Absinthe/raw/main/svg/new_ver_icon.svg")
-    local new_ver_imgRGBA, new_ver_imgWidth, new_ver_imgHeight = common.RasterizeSVG(new_ver_svg_icon_data)
-    local new_ver_icon_texture = draw.CreateTexture(new_ver_imgRGBA, new_ver_imgWidth, new_ver_imgHeight)
-
-    local new_version_wnd = gui.Window("new_version_wnd", "New version available!", 0, 0, 270, 150); new_version_wnd:SetIcon(new_ver_icon_texture, 0.5)
-    gui.Text(new_version_wnd, "New version of Absinthe lua is available!\n\nYou can re-download lua from Aimware forum\n\nor click \"OK\" and keep using this version")
-    local ok_button = gui.Button(new_version_wnd, "OK", function() new_version_wnd:SetActive(false) end); ok_button:SetWidth(238)
-end]]
-
 local rb_ref = gui.Reference("RAGEBOT")
 local tab = gui.Tab(rb_ref, "absinthe", "Absinthe")
 
 local welcum_gb = gui.Groupbox(tab, "Welcome " .. cheat.GetUserName() .. "!", 10, 10, 200, 200)
 gui.Text(welcum_gb, "You are currently using Absinthe")
-
---[[if lua_ver < latest_ver then
-    lua_version_text = lua_ver .. " [Latest " .. latest_ver .. "]"
-else
-    lua_version_text = lua_ver
-end]]
-
-gui.Text(welcum_gb, "Version " .. lua_ver)
-
+gui.Text(welcum_gb, "Version 0.5")
 
 -- rage group
 local rage_gb = gui.Groupbox(tab, "Rage", 10, 125, 200, 200)
@@ -53,13 +24,7 @@ local dt_toggle = gui.Checkbox(rage_gb, "dt_toggle", "Global DT toggle", false)
 local hs_toggle = gui.Checkbox(rage_gb, "hs_toggle", "Global HS toggle", false)
 
 -- dmg group
-local dmg_svg_icon_data = http.Get("https://raw.githubusercontent.com/olexon/Absinthe/main/svg/override_icon.svg")
-local or_imgRGBA, or_imgWidth, or_imgHeight = common.RasterizeSVG(dmg_svg_icon_data)
-
-local or_icon_texture = draw.CreateTexture(or_imgRGBA, or_imgWidth, or_imgHeight)
-
 local dmg_settings_wnd = gui.Window("dmg_settings_wnd", "Minimum Damage Settings", 100, 100, 235, 150)
-dmg_settings_wnd:SetIcon(or_icon_texture, 0.5)
 dmg_settings_wnd:SetActive(false)
 
 local dmg_or_gb = gui.Groupbox(tab, "Minimum Damage", 10, 317, 200, 200)
@@ -525,13 +490,7 @@ local fd_ind = gui.Checkbox(misc_vis_indicators_selector, "fd_ind", "Fakeduck", 
 local misc_autobuy_gb = gui.Groupbox(tab, "Autobuy", 10, 360, 200, 200)
 local autobuy_sw = gui.Checkbox(misc_autobuy_gb, "autobuy_sw", "Master Switch", false)
 
-local abuy_svg_icon_data = http.Get("https://raw.githubusercontent.com/olexon/Absinthe/main/svg/autobuy_icon.svg")
-local abuy_imgRGBA, abuy_imgWidth, abuy_imgHeight = common.RasterizeSVG(abuy_svg_icon_data)
-
-local abuy_icon_texture = draw.CreateTexture(abuy_imgRGBA, abuy_imgWidth, abuy_imgHeight)
-
 local autobuy_wnd = gui.Window("autobuy_wnd", "Autobuy", 350, 100, 235, 280)
-autobuy_wnd:SetIcon(abuy_icon_texture, 0.5)
 autobuy_wnd:SetActive(false)
 
 -- primary
