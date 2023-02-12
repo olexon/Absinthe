@@ -29,3 +29,12 @@
 
 [1/30/2023] BETA v0.5
 * Removed other functions that potentially caused errors
+
+[2/12/2023] BETA v0.6
+* Enhanced semi-rage tab
+* Added new yaw modifier to rage tab - Rotation
+* Added pitch flick (i find it useless because your head is easly hittable when flicking but it was requested so i added it)
+* Added target snaplines to visuals
+* Improved backup functions
+* Replaced backup reset button with rage quit button because it is not useful anymore
+* Other minor improvements
