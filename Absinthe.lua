@@ -13,7 +13,7 @@ local tab = gui.Tab(rb_ref, "absinthe", "Absinthe")
 
 local welcum_gb = gui.Groupbox(tab, "Welcome " .. cheat.GetUserName() .. "!", 10, 10, 200, 200)
 gui.Text(welcum_gb, "You are currently using Absinthe")
-gui.Text(welcum_gb, "Version 0.5")
+gui.Text(welcum_gb, "Version 0.6")
 
 -- rage group
 local rage_gb = gui.Groupbox(tab, "Rage", 10, 125, 200, 200)
@@ -27,7 +27,7 @@ local hs_toggle = gui.Checkbox(rage_gb, "hs_toggle", "Global HS toggle", false)
 local dmg_settings_wnd = gui.Window("dmg_settings_wnd", "Minimum Damage Settings", 100, 100, 235, 150)
 dmg_settings_wnd:SetActive(false)
 
-local dmg_or_gb = gui.Groupbox(tab, "Minimum Damage", 10, 317, 200, 200)
+local dmg_or_gb = gui.Groupbox(tab, "Minimum-Damage", 10, 317, 200, 200)
 local dmg_or = gui.Checkbox(dmg_or_gb, "dmg_or", "Damage Override", false)
 local wep_selector = gui.Multibox(dmg_settings_wnd, "")
 wep_selector:SetPosX(16.5); wep_selector:SetPosY(65)
@@ -46,13 +46,15 @@ local dmg_wnd_tab2 = gui.Button(dmg_settings_wnd, "Damage Settings", function() 
 dmg_wnd_tab2:SetPosX(5); dmg_wnd_tab2:SetPosY(40)
 dmg_wnd_tab2:SetWidth(225)
 
-local dmg_settings = gui.Button(dmg_or_gb, "Settings", function() 
+local function dmg_wnd_toggle()
     if dmg_settings_wnd:IsActive() then
         dmg_settings_wnd:SetActive(false)
     else
         dmg_settings_wnd:SetActive(true)
     end
-end)
+end
+
+local dmg_settings = gui.Button(dmg_or_gb, "Settings", dmg_wnd_toggle)
 
 dmg_settings:SetWidth(168)
 
@@ -263,6 +265,9 @@ local lby_flick_sw = gui.Checkbox(rage_aa_gb, "lby_flick_sw", "LBY Flick", false
 local lby_flick_angle = gui.Slider(rage_aa_gb, "lby_flick_angle", "Flick Angle", 1, 1, 180)
 local lby_flick_freq = gui.Slider(rage_aa_gb, "lby_flick_freq", "Flick Frequency (ticks)", 3, 3, 45)
 
+local pitch_flick_sw = gui.Checkbox(rage_aa_gb, "pitch_flick_sw", "Pitch Flick", 0); pitch_flick_sw:SetDescription("Untrusted")
+local pitch_flick_freq = gui.Slider(rage_aa_gb, "pitch_flick_freq", "Flick Frequency (ticks)", 2, 2, 35)
+
 local enable_conditions_sw = gui.Checkbox(rage_aa_gb, "enable_conditions_sw", "Enable Conditional Anti-Aim", false)
 local cond_cb = gui.Combobox(rage_aa_gb, "rage_aa_conds", "Conditions", unpack({"Standing", "Moving", "Slowwalking", "In Air"}))
 
@@ -271,20 +276,15 @@ local base_yaw_walking = gui.Slider(rage_aa_gb, "base_yaw_walking", "Base Yaw", 
 local base_yaw_slowwalking = gui.Slider(rage_aa_gb, "base_yaw_slowwalking", "Base Yaw", 180, -180, 180)
 local base_yaw_inair = gui.Slider(rage_aa_gb, "base_yaw_inair", "Base Yaw", 180, -180, 180)
 
-local aa_mode_select_stand = gui.Combobox(rage_aa_gb, "aa_mode_select_stand", "Mode", unpack({"Static", "Center", "Offset","Random", "Jitter"}))
-local aa_mode_select_walk = gui.Combobox(rage_aa_gb, "aa_mode_select_walk", "Mode", unpack({"Static", "Center", "Offset","Random", "Jitter"}))
-local aa_mode_select_slowwalk = gui.Combobox(rage_aa_gb, "aa_mode_select_slowwalk", "Mode", unpack({"Static", "Center", "Offset","Random", "Jitter"}))
-local aa_mode_select_inair = gui.Combobox(rage_aa_gb, "aa_mode_select_inair", "Mode", unpack({"Static", "Center", "Offset","Random", "Jitter"}))
+local aa_mode_select_stand = gui.Combobox(rage_aa_gb, "aa_mode_select_stand", "Mode", unpack({"Static", "Center", "Offset", "Random", "Jitter", "Rotation"}))
+local aa_mode_select_walk = gui.Combobox(rage_aa_gb, "aa_mode_select_walk", "Mode", unpack({"Static", "Center", "Offset", "Random", "Jitter", "Rotation"}))
+local aa_mode_select_slowwalk = gui.Combobox(rage_aa_gb, "aa_mode_select_slowwalk", "Mode", unpack({"Static", "Center", "Offset", "Random", "Jitter", "Rotation"}))
+local aa_mode_select_inair = gui.Combobox(rage_aa_gb, "aa_mode_select_inair", "Mode", unpack({"Static", "Center", "Offset", "Random", "Jitter", "Rotation"}))
 
 local aa_mode_angle_stand = gui.Slider(rage_aa_gb, "aa_mode_angle_stand", "Angle", 1, 1, 90)
 local aa_mode_angle_walk = gui.Slider(rage_aa_gb, "aa_mode_angle_walk", "Angle", 1, 1, 90)
 local aa_mode_angle_slowwalk = gui.Slider(rage_aa_gb, "aa_mode_angle_slowwalk", "Angle", 1, 1, 90)
 local aa_mode_angle_inair = gui.Slider(rage_aa_gb, "aa_mode_angle_inair", "Angle", 1, 1, 90)
-
---[[local roll_on_stand = gui.Combobox(rage_aa_gb, "roll_on_stand", "Roll Angle", unpack({"Off", "Default", "Custom"}))
-local roll_on_walk = gui.Combobox(rage_aa_gb, "roll_on_walk", "Roll Angle", unpack({"Off", "Default", "Custom"}))
-local roll_on_slowwalk = gui.Combobox(rage_aa_gb, "roll_on_slowwalk", "Roll Angle", unpack({"Off", "Default", "Custom"}))
-local roll_in_air = gui.Combobox(rage_aa_gb, "roll_in_air", "Roll Angle", unpack({"Off", "Default", "Custom"}))]]
 
 local roll_on_stand = gui.Checkbox(rage_aa_gb, "roll_on_stand", "Roll Angle", 0)
 local roll_on_walk = gui.Checkbox(rage_aa_gb, "roll_on_walk", "Roll Angle", 0)
@@ -430,6 +430,13 @@ local function cond_ui()
         roll_on_walk:SetInvisible(true)
         roll_on_slowwalk:SetInvisible(true)
         roll_in_air:SetInvisible(true)
+
+        if aa_mode_select_stand:GetValue() == 0 or aa_mode_select_stand:GetValue() == 4 then
+            aa_mode_angle_stand:SetInvisible(true)
+            aa_mode_angle_walk:SetInvisible(true)
+            aa_mode_angle_slowwalk:SetInvisible(true)
+            aa_mode_angle_inair:SetInvisible(true)
+        end
     end
 
     -- this lua is one big sphagetti already so i will put it there
@@ -448,6 +455,7 @@ local function cond_ui()
     end
 end
 
+-- semirage
 local semirage_gb = gui.Groupbox(tab, "Semi-Rage", 10, 125, 200, 200)
 local semirage_sw = gui.Checkbox(semirage_gb, "semirage_sw", "Master Switch", false)
 local unsafe_sw = gui.Checkbox(semirage_gb, "unsafe_sw", "Allow Unsafe Features", false)
@@ -457,26 +465,40 @@ local dynamicfov_sw = gui.Checkbox(semirage_gb, "dynamicfov_sw", "Dynamic FOV", 
 local dynamicfov_min = gui.Slider(semirage_gb, "dynamicfov_min", "Dynamic FOV Minimum", 1, 1, 30)
 local dynamicfov_max = gui.Slider(semirage_gb, "dynamicfov_max", "Dynamic FOV Maximum", 1, 1, 30)
 
-local legit_aa_gb = gui.Groupbox(tab, "Legit-Anti-Aim", 225, 125, 200, 200)
-local legit_inverter_kb = gui.Keybox(legit_aa_gb, "legit_inverter_kb", "Inverter (press)", 0)
+local dmg_semi_or = gui.Checkbox(semirage_gb, "dmg_semi_or", "Damage Override", false)
+local dmg_settings_semi = gui.Button(semirage_gb, "Settings", dmg_wnd_toggle)
+dmg_settings_semi:SetWidth(168)
 
+local legit_aa_gb = gui.Groupbox(tab, "Legit-Anti-Aim", 225, 342, 397, 200)
+local legit_inverter_kb = gui.Keybox(legit_aa_gb, "legit_inverter_kb", "Inverter (press)", 0)
+local semi_freestand_kb = gui.Keybox(legit_aa_gb, "semi_freestand_kb", "Freestanding (hold)", 0)
+local antibrute_semi_btn = gui.Button(legit_aa_gb, "Anti-Bruteforce (soon)", function() end) --lol
+antibrute_semi_btn:SetWidth(366)
+
+local desync_mod_gb = gui.Groupbox(tab, "Desync", 225, 125, 397, 200)
+local desync_left_slider = gui.Slider(desync_mod_gb, "desync_left_slider", "Left side", 0, 0, 58)
+local desync_right_slider = gui.Slider(desync_mod_gb, "desync_right_slider", "Right side", 0, 0, 58)
+local desync_roll_slider = gui.Slider(desync_mod_gb, "desync_roll_slider", "Roll Angle", 0, 0, 50); desync_roll_slider:SetDescription("Disable Anti-Untrusted to use this feature on valve matchmakking")
+
+--misc
 local misc_gb = gui.Groupbox(tab, "Misc", 10, 125, 200, 200)
 local r8_fix = gui.Checkbox(misc_gb, "r8_fix", "Revolver dump fix", false)
 gui.Text(misc_gb, "NOTE: High ping and exploits\n\nmay also cause R8 to dump!")
 local aspectratio_slider = gui.Slider(misc_gb, "aspectratio_slider", "Aspect Ratio", 0, 0, 10, 0.1)
 
---local rq_btn = gui.Button(misc_gb, "Rage Quit!", function() client.Command("quit", true) end) -- very useful feature
+local rq_btn = gui.Button(misc_gb, "Rage Quit!", function() client.Command("quit", true) end); rq_btn:SetWidth(168) -- very useful feature
 
 local misc_vis_gb = gui.Groupbox(tab, "Visuals", 225, 125, 397, 200)
 
 -- colors
 local fake_arrow_col = gui.ColorPicker(misc_vis_gb, "fake_arrow_col", "Fake Arrow", 71, 143, 86, 255)
 local real_arrow_col = gui.ColorPicker(misc_vis_gb, "real_arrow_col", "Real Arrow", 0, 0, 0, 130)
-local indicator_col = gui.ColorPicker(misc_vis_gb, "indicator_col", "Indicator", 71, 143, 86, 255)
+local indicator_col = gui.ColorPicker(misc_vis_gb, "indicator_col", "Main", 71, 143, 86, 255)
 local items_col = gui.ColorPicker(misc_vis_gb, "items_col", "Items", 118, 181, 131, 255)
 
 -- mess
 local desync_arrows_cb = gui.Checkbox(misc_vis_gb, "desync_arrows_cb", "Desync Arrows", false)
+local target_snap_cb = gui.Checkbox(misc_vis_gb, "target_snap_cb", "Target Snapline", false)
 local misc_vis_indicators = gui.Combobox(misc_vis_gb, "misc_vis_indicators", "Indicators Style", unpack({"Off", "Under Crosshair"}))
 local misc_vis_indicators_selector = gui.Multibox(misc_vis_gb, "Select Indicators")
 local abfov_ind = gui.Checkbox(misc_vis_indicators_selector, "abfov_ind", "Aim FOV", false)
@@ -570,6 +592,7 @@ autobuy_wnd_toggle:SetWidth(168)
 -- set those to invisible ootb
 semirage_gb:SetInvisible(true)
 legit_aa_gb:SetInvisible(true)
+desync_mod_gb:SetInvisible(true)
 
 misc_gb:SetInvisible(true)
 misc_vis_gb:SetInvisible(true)
@@ -583,6 +606,7 @@ local rage_subtab = gui.Button(tab, "RAGE", function()
 
     semirage_gb:SetInvisible(true)
     legit_aa_gb:SetInvisible(true)
+    desync_mod_gb:SetInvisible(true)
 
     misc_gb:SetInvisible(true)
     misc_vis_gb:SetInvisible(true)
@@ -600,6 +624,7 @@ local semirage_subtab = gui.Button(tab, "SEMI-RAGE", function()
 
     semirage_gb:SetInvisible(false)
     legit_aa_gb:SetInvisible(false)
+    desync_mod_gb:SetInvisible(false)
 
     misc_gb:SetInvisible(true)
     misc_vis_gb:SetInvisible(true)
@@ -617,6 +642,7 @@ local misc_subtab = gui.Button(tab, "MISC", function()
 
     semirage_gb:SetInvisible(true)
     legit_aa_gb:SetInvisible(true)
+    desync_mod_gb:SetInvisible(true)
 
     misc_gb:SetInvisible(false)
     misc_vis_gb:SetInvisible(false)
@@ -686,20 +712,41 @@ local weapons_list = {
 }
 
 -- RAGE
-local shared_ogdmg = gui.GetValue("rbot.hitscan.accuracy.shared.mindamage")
-local zeus_ogdmg = gui.GetValue("rbot.hitscan.accuracy.zeus.mindamage")
-local sniper_ogdmg = gui.GetValue("rbot.hitscan.accuracy.sniper.mindamage")
-local smg_ogdmg = gui.GetValue("rbot.hitscan.accuracy.smg.mindamage")
-local shotgun_ogdmg = gui.GetValue("rbot.hitscan.accuracy.shotgun.mindamage")
-local scout_ogdmg = gui.GetValue("rbot.hitscan.accuracy.scout.mindamage")
-local rifle_ogdmg = gui.GetValue("rbot.hitscan.accuracy.rifle.mindamage")
-local pistol_ogdmg = gui.GetValue("rbot.hitscan.accuracy.pistol.mindamage")
-local lmg_ogdmg = gui.GetValue("rbot.hitscan.accuracy.lmg.mindamage")
-local hpistol_ogdmg = gui.GetValue("rbot.hitscan.accuracy.hpistol.mindamage")
-local asniper_ogdmg = gui.GetValue("rbot.hitscan.accuracy.asniper.mindamage")
+local mindmg_backup_state = 0
+local mindmg_original_backup = {
+    shared = nil,
+    zeus = nil,
+    sniper = nil,
+    smg = nil,
+    shotgun = nil,
+    scout = nil,
+    rifle = nil,
+    pistol = nil,
+    lmg = nil,
+    hpistol = nil,
+    asniper = nil
+}
 
-local function dmg_override()
-    if rage_sw:GetValue() and dmg_or:GetValue() then
+local function dmg_override() -- pee pee poo poo retarb function for loops hurt
+    if not rage_sw:GetValue() and not semirage_sw:GetValue() then return end
+
+    if dmg_or:GetValue() or dmg_semi_or:GetValue() then
+        if mindmg_backup_state ~= 1 then
+            mindmg_original_backup.shared = gui.GetValue("rbot.hitscan.accuracy.shared.mindamage")
+            mindmg_original_backup.zeus = gui.GetValue("rbot.hitscan.accuracy.zeus.mindamage")
+            mindmg_original_backup.sniper = gui.GetValue("rbot.hitscan.accuracy.sniper.mindamage")
+            mindmg_original_backup.smg = gui.GetValue("rbot.hitscan.accuracy.smg.mindamage")
+            mindmg_original_backup.shotgun = gui.GetValue("rbot.hitscan.accuracy.shotgun.mindamage")
+            mindmg_original_backup.scout = gui.GetValue("rbot.hitscan.accuracy.scout.mindamage")
+            mindmg_original_backup.rifle = gui.GetValue("rbot.hitscan.accuracy.rifle.mindamage")
+            mindmg_original_backup.pistol = gui.GetValue("rbot.hitscan.accuracy.pistol.mindamage")
+            mindmg_original_backup.lmg = gui.GetValue("rbot.hitscan.accuracy.lmg.mindamage")
+            mindmg_original_backup.hpistol = gui.GetValue("rbot.hitscan.accuracy.hpistol.mindamage")
+            mindmg_original_backup.asniper = gui.GetValue("rbot.hitscan.accuracy.asniper.mindamage")
+
+            mindmg_backup_state = 1
+        end
+
         if shared_check:GetValue() then
             gui.SetValue("rbot.hitscan.accuracy.shared.mindamage", shared_or:GetValue())
         end
@@ -733,39 +780,21 @@ local function dmg_override()
         if asniper_check:GetValue() then
             gui.SetValue("rbot.hitscan.accuracy.asniper.mindamage", asniper_or:GetValue())
         end
-    elseif rage_sw:GetValue() and not dmg_or:GetValue() then -- this was else before but aimware shat itself and always forced min dmg 1 even if slider was set to hp+1 #ghettofix
-        if gui.GetValue("rbot.hitscan.accuracy.shared.mindamage") == shared_or:GetValue() and shared_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.shared.mindamage", shared_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.zeus.mindamage") == zeus_or:GetValue() and zeus_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.zeus.mindamage", zeus_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.sniper.mindamage") == sniper_or:GetValue() and sniper_check:GetValue( ) then
-            gui.SetValue("rbot.hitscan.accuracy.sniper.mindamage", sniper_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.smg.mindamage") == smg_or:GetValue() and smg_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.smg.mindamage", smg_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.shotgun.mindamage") == shotgun_or:GetValue() and shotgun_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.shotgun.mindamage", shotgun_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.scout.mindamage") == scout_or:GetValue() and scout_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.scout.mindamage", scout_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.rifle.mindamage") == rifle_or:GetValue() and rifle_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.rifle.mindamage", rifle_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.pistol.mindamage") == pistol_or:GetValue() and pistol_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.pistol.mindamage", pistol_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.lmg.mindamage") == lmg_or:GetValue() and lmg_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.lmg.mindamage", lmg_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.hpistol.mindamage") == hpistol_or:GetValue() and hpistol_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.hpistol.mindamage", hpistol_ogdmg)
-        end
-        if gui.GetValue("rbot.hitscan.accuracy.asniper.mindamage") == asniper_or:GetValue() and asniper_check:GetValue() then
-            gui.SetValue("rbot.hitscan.accuracy.asniper.mindamage", asniper_ogdmg)
+    elseif not dmg_or:GetValue() and not dmg_semi_or:GetValue() then
+        if mindmg_backup_state == 1 then
+            mindmg_original_backup.shared = gui.SetValue("rbot.hitscan.accuracy.shared.mindamage", mindmg_original_backup.shared)
+            mindmg_original_backup.zeus = gui.SetValue("rbot.hitscan.accuracy.zeus.mindamage", mindmg_original_backup.zeus)
+            mindmg_original_backup.sniper = gui.SetValue("rbot.hitscan.accuracy.sniper.mindamage", mindmg_original_backup.sniper)
+            mindmg_original_backup.smg = gui.SetValue("rbot.hitscan.accuracy.smg.mindamage", mindmg_original_backup.smg)
+            mindmg_original_backup.shotgun = gui.SetValue("rbot.hitscan.accuracy.shotgun.mindamage", mindmg_original_backup.shotgun)
+            mindmg_original_backup.scout = gui.SetValue("rbot.hitscan.accuracy.scout.mindamage", mindmg_original_backup.scout)
+            mindmg_original_backup.rifle = gui.SetValue("rbot.hitscan.accuracy.rifle.mindamage", mindmg_original_backup.rifle)
+            mindmg_original_backup.pistol = gui.SetValue("rbot.hitscan.accuracy.pistol.mindamage", mindmg_original_backup.pistol)
+            mindmg_original_backup.lmg = gui.SetValue("rbot.hitscan.accuracy.lmg.mindamage", mindmg_original_backup.lmg)
+            mindmg_original_backup.hpistol = gui.SetValue("rbot.hitscan.accuracy.hpistol.mindamage", mindmg_original_backup.hpistol)
+            mindmg_original_backup.asniper = gui.SetValue("rbot.hitscan.accuracy.asniper.mindamage", mindmg_original_backup.asniper)
+
+            mindmg_backup_state = 0
         end
     end
     --print(gui.GetValue( "rbot.hitscan.accuracy.scout.mindamage" ))
@@ -783,10 +812,102 @@ local function resolver_override()
 end
 
 -- RAGE AA
+local function center_jitter(base_yaw, condition_value, tick_multiplier) 
+    if base_yaw > 0 then    
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw-condition_value))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", (-base_yaw+condition_value))
+        end  
+    else
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw+condition_value))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", (-base_yaw-condition_value))
+        end  
+    end
+end
+
+local function offset_jitter(base_yaw, condition_value, tick_multiplier) 
+    if base_yaw > 0 then    
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw-condition_value))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", base_yaw)
+        end  
+    else
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw+condition_value))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", base_yaw)
+        end  
+    end
+end
+
+local function random_jitter(base_yaw, condition_value, tick_multiplier) 
+    if base_yaw > 0 then    
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw-math.random(1, condition_value)))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", (-base_yaw+math.random(1, condition_value)))
+        end  
+    else
+        if globals.TickCount()%2 == 0 then
+            gui.SetValue("rbot.antiaim.base", (base_yaw+math.random(1, condition_value)))
+        end
+
+        if globals.TickCount()%(2*tick_multiplier) == 0 then
+            gui.SetValue("rbot.antiaim.base", (-base_yaw-math.random(1, condition_value)))
+        end  
+    end
+end
+
+local spin_angle = 0
+local function spinbot(yaw, condition_value)
+    spin_angle = spin_angle + 4
+
+    if spin_angle > condition_value then 
+        spin_angle = spin_angle * -1
+    end
+
+    if gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+        if spin_angle > 0 then
+            yaw = yaw + spin_angle
+        else
+            yaw = yaw - spin_angle
+        end
+    else
+        if spin_angle > 0 then
+            yaw = yaw - spin_angle
+        else
+            yaw = yaw + spin_angle
+        end
+    end
+
+    if yaw > 180 then
+        yaw = yaw - 360
+    elseif yaw < -180 then
+        yaw = yaw + 360
+    end
+
+    gui.SetValue("rbot.antiaim.base", yaw)
+end
+
+
 local function rage_aa()
     if rage_sw:GetValue() then
 
-        local tick_multiplier = 2 
+        local tick_multiplier = 2
 
         if enable_conditions_sw:GetValue() then
             -- conditions
@@ -794,70 +915,23 @@ local function rage_aa()
 
             local localplayer = entities:GetLocalPlayer()
             local localplayer_velocity = localplayer:GetPropVector("localdata", "m_vecVelocity[0]"):Length()
-            local localplayer_flags = localplayer:GetPropBool("m_fFlags")
+            local localplayer_flags = localplayer:GetPropBool("m_hGroundEntity")
 
-            if slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
+            if slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == false then --walking
 
                 if aa_mode_select_walk:GetValue() == 0 then
                     gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
                 elseif aa_mode_select_walk:GetValue() == 1 then
 
-                    if base_yaw_walking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
-                        end  
-                    end
+                    center_jitter(base_yaw_walking:GetValue(), aa_mode_angle_walk:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_walk:GetValue() == 2 then
 
-                    if base_yaw_walking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-aa_mode_angle_walk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+aa_mode_angle_walk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_walking:GetValue())
-                        end  
-                    end
+                    offset_jitter(base_yaw_walking:GetValue(), aa_mode_angle_walk:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_walk:GetValue() == 3 then
-                    if base_yaw_walking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
-                        end
 
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_walking:GetValue()+math.random(1, aa_mode_angle_walk:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_walking:GetValue()-math.random(1, aa_mode_angle_walk:GetValue())))
-                        end  
-                    end
+                    random_jitter(base_yaw_walking:GetValue(), aa_mode_angle_walk:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_walk:GetValue() == 4 then
                     if globals.TickCount()%2 == 0 then
@@ -866,7 +940,11 @@ local function rage_aa()
 
                     if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", 180)
-                    end  
+                    end
+                elseif aa_mode_select_walk:GetValue() == 5 then
+                    
+                    spinbot(base_yaw_walking:GetValue(), aa_mode_angle_walk:GetValue())
+
                 end 
 
                 if roll_on_walk:GetValue() then
@@ -874,69 +952,21 @@ local function rage_aa()
                 else
                     gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
-
-            elseif slowwalkkey ~= nil and input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then
+            elseif slowwalkkey ~= nil and input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == false then --slowwalking
 
                 if aa_mode_select_slowwalk:GetValue() == 0 then
                     gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
                 elseif aa_mode_select_slowwalk:GetValue() == 1 then
 
-                    if base_yaw_slowwalking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
-                        end  
-                    end
+                    center_jitter(base_yaw_slowwalking:GetValue(), aa_mode_angle_slowwalk:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_slowwalk:GetValue() == 2 then
 
-                    if base_yaw_slowwalking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-aa_mode_angle_slowwalk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_slowwalk:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_slowwalking:GetValue())
-                        end  
-                    end
+                    offset_jitter(base_yaw_slowwalking:GetValue(), aa_mode_angle_slowwalk:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_slowwalk:GetValue() == 3 then
-                    if base_yaw_slowwalking:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                        end
 
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-math.random(1, aa_mode_angle_slowwalk:GetValue())))
-                        end  
-                    end
+                    random_jitter(base_yaw_slowwalking:GetValue(), aa_mode_angle_slowwalk:GetValue(), tick_multiplier)
                 
                 elseif aa_mode_select_slowwalk:GetValue() == 4 then
                     if globals.TickCount()%2 == 0 then
@@ -946,6 +976,10 @@ local function rage_aa()
                     if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", 180)
                     end
+                elseif aa_mode_select_slowwalk:GetValue() == 5 then
+                    
+                    spinbot(base_yaw_slowwalking:GetValue(), aa_mode_angle_slowwalk:GetValue())
+
                 end
 
                 if roll_on_slowwalk:GetValue() then
@@ -953,68 +987,21 @@ local function rage_aa()
                 else
                     gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
-            elseif slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == false then
+            elseif slowwalkkey == nil or not input.IsButtonDown(slowwalkkey) and localplayer_velocity > 3 and localplayer_flags == true then --inair
                 
                 if aa_mode_select_inair:GetValue() == 0 then
                     gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
                 elseif aa_mode_select_inair:GetValue() == 1 then
 
-                    if base_yaw_inair:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_slowwalking:GetValue()+aa_mode_angle_inair:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_slowwalking:GetValue()-aa_mode_angle_inair:GetValue()))
-                        end  
-                    end
+                    center_jitter(base_yaw_inair:GetValue(), aa_mode_angle_inair:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_inair:GetValue() == 2 then
 
-                    if base_yaw_inair:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-aa_mode_angle_inair:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+aa_mode_angle_inair:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_inair:GetValue())
-                        end  
-                    end
+                    offset_jitter(base_yaw_inair:GetValue(), aa_mode_angle_inair:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_inair:GetValue() == 3 then
-                    if base_yaw_inair:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_inair:GetValue()+math.random(1, aa_mode_angle_inair:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_inair:GetValue()-math.random(1, aa_mode_angle_inair:GetValue())))
-                        end  
-                    end
+                    
+                    random_jitter(base_yaw_inair:GetValue(), aa_mode_angle_inair:GetValue(), tick_multiplier)
                 
                 elseif aa_mode_select_inair:GetValue() == 4 then
                     if globals.TickCount()%2 == 0 then
@@ -1024,6 +1011,10 @@ local function rage_aa()
                     if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", 180)
                     end
+                elseif aa_mode_select_inair:GetValue() == 5 then
+                    
+                    spinbot(base_yaw_inair:GetValue(), aa_mode_angle_inair:GetValue())
+
                 end
 
                 if roll_in_air:GetValue() then
@@ -1031,68 +1022,21 @@ local function rage_aa()
                 else
                     gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
-            else
+            else --standing
 
                 if aa_mode_select_stand:GetValue() == 0 then
                     gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
                 elseif aa_mode_select_stand:GetValue() == 1 then
 
-                    if base_yaw_stand:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                        end  
-                    end
+                    center_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_stand:GetValue() == 2 then
 
-                    if base_yaw_stand:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
-                        end  
-                    end
+                    offset_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
 
                 elseif aa_mode_select_stand:GetValue() == 3 then
-                    if base_yaw_stand:GetValue() > 0 then    
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
-                        end  
-                    else
-                        if globals.TickCount()%2 == 0 then
-                            gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
-                        end
-
-                        if globals.TickCount()%(2*tick_multiplier) == 0 then
-                            gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
-                        end  
-                    end
+                    
+                    random_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
                 
                 elseif aa_mode_select_stand:GetValue() == 4 then
                     if globals.TickCount()%2 == 0 then
@@ -1102,6 +1046,10 @@ local function rage_aa()
                     if globals.TickCount()%(2*tick_multiplier) == 0 then
                         gui.SetValue("rbot.antiaim.base", 180)
                     end
+                elseif aa_mode_select_stand:GetValue() == 5 then
+                    
+                    spinbot(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue())
+
                 end
 
                 if roll_on_stand:GetValue() then
@@ -1110,67 +1058,20 @@ local function rage_aa()
                     gui.SetValue("rbot.antiaim.advanced.roll", false)
                 end
             end
-        else
+        else --general-
             if aa_mode_select_stand:GetValue() == 0 then
                 gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
             elseif aa_mode_select_stand:GetValue() == 1 then
 
-                if base_yaw_stand:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                    end  
-                end
+                center_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
 
             elseif aa_mode_select_stand:GetValue() == 2 then
 
-                if base_yaw_stand:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-aa_mode_angle_stand:GetValue()))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+aa_mode_angle_stand:GetValue()))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", base_yaw_stand:GetValue())
-                    end  
-                end
+                offset_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
 
             elseif aa_mode_select_stand:GetValue() == 3 then
-                if base_yaw_stand:GetValue() > 0 then    
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
-                    end  
-                else
-                    if globals.TickCount()%2 == 0 then
-                        gui.SetValue("rbot.antiaim.base", (base_yaw_stand:GetValue()+math.random(1, aa_mode_angle_stand:GetValue())))
-                    end
-
-                    if globals.TickCount()%(2*tick_multiplier) == 0 then
-                        gui.SetValue("rbot.antiaim.base", (-base_yaw_stand:GetValue()-math.random(1, aa_mode_angle_stand:GetValue())))
-                    end  
-                end
+                
+                random_jitter(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue(), tick_multiplier)
             
             elseif aa_mode_select_stand:GetValue() == 4 then
                 if globals.TickCount()%2 == 0 then
@@ -1180,6 +1081,10 @@ local function rage_aa()
                 if globals.TickCount()%(2*tick_multiplier) == 0 then
                     gui.SetValue("rbot.antiaim.base", 180)
                 end
+            elseif aa_mode_select_stand:GetValue()== 5 then
+                    
+                spinbot(base_yaw_stand:GetValue(), aa_mode_angle_stand:GetValue())
+                
             end
 
             if roll_on_stand:GetValue() then
@@ -1219,15 +1124,39 @@ local function lby_flick()
     end
 end
 
+local function pitch_flick(cmd)
+    local lp = entities.GetLocalPlayer()
+
+    if not lp or not lp:IsAlive() then return end
+
+    if legitaa_kb:GetValue() ~= 0 then
+        if input.IsButtonDown(legitaa_kb:GetValue()) then return end
+    end
+
+    if pitch_flick_sw:GetValue() and bit.band(cmd.buttons, bit.lshift(1, 0)) ~= 1 --[[ <-- to prevent shooting at the sky ]]  then
+        if globals.TickCount()%pitch_flick_freq:GetValue() == 0 then
+            cmd.viewangles = EulerAngles(-180, cmd.viewangles.y, cmd.viewangles.z)
+        end
+
+        if globals.TickCount()%(pitch_flick_freq:GetValue()*2) == 0 then
+            cmd.viewangles = EulerAngles(cmd.viewangles.x, cmd.viewangles.y, cmd.viewangles.z)
+        end
+    end
+end -- shit fuck fuck balls cum aaAAAAaaaaaaaaaAAAAAAAAAA
+
 
 local legitaa_backup_state = 0
 local backup_legitaa = {
     pitch = nil,
     targets = nil
 }
+
 local function legit_aa_on_hold()
     if rage_sw:GetValue() then
-        if legitaa_kb:GetValue() ~= 0 and input.IsButtonDown(legitaa_kb:GetValue()) then
+
+        if legitaa_kb:GetValue() == 0 then return end
+
+        if input.IsButtonDown(legitaa_kb:GetValue()) then
             if legitaa_backup_state ~= 1 then
                 backup_legitaa.pitch = gui.GetValue("rbot.antiaim.advanced.pitch")
                 backup_legitaa.targets = gui.GetValue("rbot.antiaim.condition.autodir.targets")
@@ -1239,24 +1168,22 @@ local function legit_aa_on_hold()
             gui.SetValue("rbot.antiaim.advanced.pitch", 0)
             gui.SetValue("rbot.antiaim.condition.autodir.targets", false)
             gui.SetValue("rbot.antiaim.condition.use", false)
-        elseif legitaa_kb:GetValue() ~= 0 and not input.IsButtonDown(legitaa_kb:GetValue()) then
-            if backup_legitaa.pitch == nil or backup_legitaa.targets == nil then return end
-
-            if gui.GetValue("rbot.antiaim.advanced.pitch") ~= backup_legitaa.pitch then
+        else
+            if legitaa_backup_state == 1 then
                 gui.SetValue("rbot.antiaim.advanced.pitch", backup_legitaa.pitch)
-            end
-
-            if gui.GetValue("rbot.antiaim.condition.autodir.targets") ~= backup_legitaa.targets then
                 gui.SetValue("rbot.antiaim.condition.autodir.targets", backup_legitaa.targets)
-            end
+                gui.SetValue("rbot.antiaim.condition.use", backup_legitaa.disable_on_use)
+                gui.SetValue("rbot.antiaim.condition.use", false)
 
-            gui.SetValue("rbot.antiaim.condition.use", false)
+                legitaa_backup_state = 0
+            end
         end
     end
 end
 
 local stage = 0
 local function anti_brute(event)
+    if not rage_sw:GetValue() and not semirage_sw:GetValue() then return end
     local localplayer = entities.GetLocalPlayer()
 
     if not localplayer or not localplayer:IsAlive() then 
@@ -1267,63 +1194,70 @@ local function anti_brute(event)
         return
     end
 
-    if rage_sw:GetValue() then
-        if event then
+    if event then
 
-            if event:GetName() == nil or client.GetLocalPlayerIndex() == client.GetPlayerIndexByUserID(event:GetInt("userid")) then return end
-            local attacker_ent = entities.GetByIndex(client.GetPlayerIndexByUserID(event:GetInt("userid")))
-            
-            if entities.GetLocalPlayer():GetTeamNumber() == attacker_ent:GetTeamNumber() then return end
+        if event:GetName() == nil or client.GetLocalPlayerIndex() == client.GetPlayerIndexByUserID(event:GetInt("userid")) then return end
+        local attacker_ent = entities.GetByIndex(client.GetPlayerIndexByUserID(event:GetInt("userid")))
+        
+        if entities.GetLocalPlayer():GetTeamNumber() == attacker_ent:GetTeamNumber() then return end
 
-            if event:GetName() == "bullet_impact" then
-                if antibrute_mode:GetValue() == 1 then
-                    gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
+        if event:GetName() == "bullet_impact" then
+            if antibrute_mode:GetValue() == 1 then
+                gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
+            end
+
+            if antibrute_mode:GetValue() == 2 then
+                if stage == 0 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage1:GetValue())
+                    stage = stage + 1
+                elseif stage == 1 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage2:GetValue())
+                    stage = stage + 1
+                elseif stage == 2 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage3:GetValue())
+                    stage = stage + 1
+                elseif stage == 3 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage4:GetValue())
+                    stage = stage + 1
+                elseif stage == 4 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage5:GetValue())
+                    stage = 0
+                --[[elseif stage == 5 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage6:GetValue())
+                    stage = stage + 1
+                elseif stage == 6 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage7:GetValue())
+                    stage = stage + 1
+                elseif stage == 7 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage8:GetValue())
+                    stage = stage + 1
+                elseif stage == 8 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage9:GetValue())
+                    stage = stage + 1
+                elseif stage == 9 then
+                    gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage10:GetValue())
+                    stage = 0]]
                 end
 
-                if antibrute_mode:GetValue() == 2 then
-                    if stage == 0 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage1:GetValue())
-                        stage = stage + 1
-                    elseif stage == 1 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage2:GetValue())
-                        stage = stage + 1
-                    elseif stage == 2 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage3:GetValue())
-                        stage = stage + 1
-                    elseif stage == 3 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage4:GetValue())
-                        stage = stage + 1
-                    elseif stage == 4 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage5:GetValue())
-                        stage = 0
-                    --[[elseif stage == 5 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage6:GetValue())
-                        stage = stage + 1
-                    elseif stage == 6 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage7:GetValue())
-                        stage = stage + 1
-                    elseif stage == 7 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage8:GetValue())
-                        stage = stage + 1
-                    elseif stage == 8 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage9:GetValue())
-                        stage = stage + 1
-                    elseif stage == 9 then
-                        gui.SetValue("rbot.antiaim.base.rotation", antibrute_stage10:GetValue())
-                        stage = 0]]
-                    end
-
-                    --print(stage)
-                end
+                --print(stage)
             end
         end
     end
 end
 
+local semi_current_side = 0 -- 0 - left | 1 - right
 local function desync_inverter()
-    if rage_sw:GetValue() or semirage_sw:GetValue() then
-        if (inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(inverter_kb:GetValue())) or (legit_inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(legit_inverter_kb:GetValue())) then
+    if rage_sw:GetValue() then
+        if (inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(inverter_kb:GetValue())) then
             gui.SetValue("rbot.antiaim.base.rotation", (gui.GetValue("rbot.antiaim.base.rotation")*-1))
+        end
+    elseif semirage_sw:GetValue() then
+        if (legit_inverter_kb:GetValue() ~= 0 and input.IsButtonPressed(legit_inverter_kb:GetValue())) then
+            if semi_current_side ~= 1 then
+                semi_current_side = semi_current_side + 1
+            else
+                semi_current_side = 0
+            end
         end
     end
 end
@@ -1337,12 +1271,12 @@ local function desync_jitter()
 end
 
 local function freestand()
-    if rage_sw:GetValue() then
-        if freestand_kb:GetValue() ~= 0 and input.IsButtonDown(freestand_kb:GetValue()) then
+    if rage_sw:GetValue() or semirage_sw:GetValue() and unsafe_sw:GetValue() then
+        if freestand_kb:GetValue() ~= 0 and input.IsButtonDown(freestand_kb:GetValue()) or semi_freestand_kb:GetValue() ~= 0 and input.IsButtonDown(semi_freestand_kb:GetValue()) then
             gui.SetValue("rbot.antiaim.condition.autodir.edges", true)
             gui.SetValue("rbot.antiaim.right", -110)
             gui.SetValue("rbot.antiaim.left", 110)
-        elseif freestand_kb:GetValue() == 0 or not input.IsButtonDown(freestand_kb:GetValue()) then
+        elseif freestand_kb:GetValue() == 0 or not input.IsButtonDown(freestand_kb:GetValue()) or semi_freestand_kb:GetValue() == 0 or not input.IsButtonDown(semi_freestand_kb:GetValue()) then
             gui.SetValue("rbot.antiaim.condition.autodir.edges", false)
         end
     end
@@ -1400,19 +1334,24 @@ end
 local function clamp() -- this won't allow user to set some things to minimize the chance of getting banned
     if semirage_sw:GetValue() then
         gui.SetValue("rbot.antiaim.base", 0)
-        gui.SetValue("rbot.antiaim.condition.autodir.edges", 0)
         gui.SetValue("rbot.antiaim.condition.autodir.targets", 0)
         gui.SetValue("rbot.antiaim.advanced.pitch", 0)
+        gui.SetValue("rbot.antiaim.advanced.antiresolver", 0)
+        gui.SetValue("rbot.antiaim.extra.exposefake", 0)
 
         if not unsafe_sw:GetValue() then
+            gui.SetValue("rbot.antiaim.condition.autodir.edges", 0)
             gui.SetValue("misc.antiuntrusted", 1)
             gui.SetValue("rbot.antiaim.advanced.roll", 0)
-            gui.SetValue("rbot.antiaim.advanced.antiresolver", 0) -- idk if this is safe or not but i never saw any1 using it so /shrug
-            gui.SetValue("rbot.antiaim.extra.exposefake", 0)
+            desync_roll_slider:SetDisabled(true)
+            semi_freestand_kb:SetDisabled(true)
 
             if gui.GetValue("rbot.aim.target.fov") > 30 then 
                 gui.SetValue("rbot.aim.target.fov", 30)
             end
+        else
+            desync_roll_slider:SetDisabled(false)
+            semi_freestand_kb:SetDisabled(false)
         end
     end
 end
@@ -1450,6 +1389,30 @@ local function dynamicfov()
         end
 
         gui.SetValue("rbot.aim.target.fov", fov)
+    end
+end
+
+local function semi_aa(cmd)
+    if semirage_sw:GetValue() then
+        if semi_current_side ~= 1 then
+            gui.SetValue("rbot.antiaim.base.rotation", (desync_left_slider:GetValue() * -1))
+        else
+            gui.SetValue("rbot.antiaim.base.rotation", desync_right_slider:GetValue())
+        end
+
+        if unsafe_sw:GetValue() then
+            if desync_roll_slider:GetValue() > 0 then
+                if gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+                    cmd.viewangles = EulerAngles(cmd.viewangles.x, cmd.viewangles.y, (desync_roll_slider:GetValue()*-1))
+                elseif gui.GetValue("rbot.antiaim.base.rotation") < 0 then
+                    cmd.viewangles = EulerAngles(cmd.viewangles.x, cmd.viewangles.y, desync_roll_slider:GetValue())
+                else
+                    cmd.viewangles = EulerAngles(cmd.viewangles.x, cmd.viewangles.y, cmd.viewangles.z)
+                end
+            else
+                cmd.viewangles = EulerAngles(cmd.viewangles.x, cmd.viewangles.y, cmd.viewangles.z)
+            end
+        end
     end
 end
 
@@ -1576,20 +1539,22 @@ local function indicators()
 
                 dmg_value = gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamage")
 
-                if gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp") == 0 then
+                --[[if gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp") == 0 then
                     dmg_text = "dmg: " .. dmg_value
                 else
                     dmg_text = "dmg: " .. dmg_value .. "+" .. gui.GetValue("rbot.hitscan.accuracy." .. weapons_list[localplayer_weaponid] .. ".mindamagehp")
-                end
+                end]]
+
+                dmg_text = "dmg: " .. dmg_value
 
                 local im_fucking_done = dmg_text:len()
 
                 if dmg_text:len() > 8 then -- this is fucking retarded
-                    im_fucking_done = -dmg_text:len() + 8.5
+                    im_fucking_done = -dmg_text:len() + 9
                 elseif dmg_text:len() == 8 then
                     im_fucking_done = 4
                 elseif dmg_text:len() == 7 then
-                    im_fucking_done = 7
+                    im_fucking_done = 6
                 elseif dmg_text:len() == 6 then
                     im_fucking_done = 10
                 end
@@ -1741,6 +1706,37 @@ local function autobuy(event)
     end
 end
 
+local last_target = nil
+local head_pos_wts = { x = nil, y = nil }
+
+local function target_snapline_get_target(target)
+    if target:GetIndex() == nil then return end
+
+    last_target = target:GetIndex()
+end
+
+local function target_snapline_draw() 
+    if target_snap_cb:GetValue() then
+        local localplayer = entities.GetLocalPlayer()
+        if not localplayer or not localplayer:IsAlive() or last_target == nil then return end
+
+        last_target_ent = entities.GetByIndex(last_target)
+
+        if not last_target_ent:IsAlive() or last_target_ent:IsDormant() then --i like my bitches redbone, ass fat, jell-O
+            last_target = nil
+        end
+
+        if not last_target_ent:IsAlive() then return end
+
+        head_pos_wts.x, head_pos_wts.y = client.WorldToScreen(last_target_ent:GetHitboxPosition(0))
+        
+        if head_pos_wts.x == nil or head_pos_wts.y == nil then return end
+
+        draw.Color(indicator_col:GetValue())
+        draw.Line(screen_w/2, screen_h/2, math.floor(head_pos_wts.x), math.floor(head_pos_wts.y))
+    end
+end
+
 local r8_backup_state = 0
 local backup_r8 = {
     fakelag = nil,
@@ -1772,12 +1768,11 @@ local function r8_dump_fix()
         else
             if backup_r8.fakelag == nil or backup_r8.fakelatency == nil then return end
 
-            if gui.GetValue("misc.fakelag.enable") ~= backup_r8.fakelag then
+            if r8_backup_state == 1 then
                 gui.SetValue("misc.fakelag.enable", backup_r8.fakelag)
-            end
-
-            if gui.GetValue("misc.fakelatency.enable") ~= backup_r8.fakelatency then
                 gui.SetValue("misc.fakelatency.enable", backup_r8.fakelatency)
+
+                r8_backup_state = 0
             end
         end
     end
@@ -1797,8 +1792,6 @@ local function sw_checks()
 
     -- rage tab
     if rage_sw:GetValue() == true then
-        --dmg_selector:SetDisabled(false)
-        dmg_or:SetDisabled(false)
         cond_cb:SetDisabled(false)
         inverter_kb:SetDisabled(false)
         freestand_kb:SetDisabled(false)
@@ -1829,26 +1822,15 @@ local function sw_checks()
         antibrute_stage3:SetDisabled(false)
         antibrute_stage4:SetDisabled(false)
         antibrute_stage5:SetDisabled(false)
-        --[[shared_or:SetDisabled(false)
-        zeus_or:SetDisabled(false)
-        sniper_or:SetDisabled(false)
-        smg_or:SetDisabled(false)
-        shotgun_or:SetDisabled(false)
-        scout_or:SetDisabled(false)
-        rifle_or:SetDisabled(false)
-        pistol_or:SetDisabled(false)
-        lmg_or:SetDisabled(false)
-        hpistol_or:SetDisabled(false)
-        asniper_or:SetDisabled(false)]]
         lby_flick_sw:SetDisabled(false)
         lby_flick_angle:SetDisabled(false)
         lby_flick_freq:SetDisabled(false)
         enable_conditions_sw:SetDisabled(false)
+        pitch_flick_sw:SetDisabled(false)
+        pitch_flick_freq:SetDisabled(false)
         dmg_settings:SetDisabled(false)
-        --dmg_settings_wnd:SetActive(false)
+        dmg_or:SetDisabled(false)
     else
-        --dmg_selector:SetDisabled(true)
-        dmg_or:SetDisabled(true)
         cond_cb:SetDisabled(true)
         inverter_kb:SetDisabled(true)
         freestand_kb:SetDisabled(true)
@@ -1879,23 +1861,14 @@ local function sw_checks()
         antibrute_stage3:SetDisabled(true)
         antibrute_stage4:SetDisabled(true)
         antibrute_stage5:SetDisabled(true)
-        --[[shared_or:SetDisabled(true)
-        zeus_or:SetDisabled(true)
-        sniper_or:SetDisabled(true)
-        smg_or:SetDisabled(true)
-        shotgun_or:SetDisabled(true)
-        scout_or:SetDisabled(true)
-        rifle_or:SetDisabled(true)
-        pistol_or:SetDisabled(true)
-        lmg_or:SetDisabled(true)
-        hpistol_or:SetDisabled(true)
-        asniper_or:SetDisabled(true)]]
         lby_flick_sw:SetDisabled(true)
         lby_flick_angle:SetDisabled(true)
         lby_flick_freq:SetDisabled(true)
         enable_conditions_sw:SetDisabled(true)
+        pitch_flick_sw:SetDisabled(true)
+        pitch_flick_freq:SetDisabled(true)
         dmg_settings:SetDisabled(true)
-        dmg_settings_wnd:SetActive(false)
+        dmg_or:SetDisabled(true)
     end
 
     if lby_flick_sw:GetValue() then
@@ -1904,6 +1877,12 @@ local function sw_checks()
     else
         lby_flick_angle:SetInvisible(true)
         lby_flick_freq:SetInvisible(true)
+    end
+
+    if pitch_flick_sw:GetValue() then
+        pitch_flick_freq:SetInvisible(false)
+    else
+        pitch_flick_freq:SetInvisible(true)
     end
 
     if enable_conditions_sw:GetValue() then
@@ -1921,7 +1900,15 @@ local function sw_checks()
         dynamicfov_min:SetDisabled(false)
         dynamicfov_max:SetDisabled(false)
 
+        dmg_semi_or:SetDisabled(false)
+        dmg_settings_semi:SetDisabled(false)
+
         legit_inverter_kb:SetDisabled(false)
+        desync_left_slider:SetDisabled(false)
+        desync_right_slider:SetDisabled(false)
+        desync_roll_slider:SetDisabled(false)
+        semi_freestand_kb:SetDisabled(false)
+        antibrute_semi_btn:SetDisabled(false)
     else
         unsafe_sw:SetDisabled(true)
         unsafe_txt:SetDisabled(true)
@@ -1930,7 +1917,15 @@ local function sw_checks()
         dynamicfov_min:SetDisabled(true)
         dynamicfov_max:SetDisabled(true)
 
+        dmg_semi_or:SetDisabled(true)
+        dmg_settings_semi:SetDisabled(true)
+
         legit_inverter_kb:SetDisabled(true)
+        desync_left_slider:SetDisabled(true)
+        desync_right_slider:SetDisabled(true)
+        desync_roll_slider:SetDisabled(true)
+        semi_freestand_kb:SetDisabled(true)
+        antibrute_semi_btn:SetDisabled(true)
     end
 
     if dynamicfov_sw:GetValue() then
@@ -1939,6 +1934,13 @@ local function sw_checks()
     else
         dynamicfov_max:SetInvisible(true)
         dynamicfov_min:SetInvisible(true)
+    end
+
+    --shared features
+    if semirage_sw:GetValue() or rage_sw:GetValue() then
+        --PASS
+    else
+        dmg_settings_wnd:SetActive(false)
     end
 
 end
@@ -1952,7 +1954,7 @@ local function windows_handler()
 end
 
 -- resets
-local backup_reset = gui.Button(misc_gb, "Reset backup states", function() 
+--[[local backup_reset = gui.Button(misc_gb, "Reset backup states", function() 
     legitaa_kb:SetValue(0)
     r8_fix:SetValue(false)
 
@@ -1966,13 +1968,15 @@ local backup_reset = gui.Button(misc_gb, "Reset backup states", function()
     backup_r8.fakelatency = nil
 
     print("reset successful, you can now re-enable your functions or reload your config")
-end) backup_reset:SetWidth(168)
+end) backup_reset:SetWidth(168)]]
 
 client.AllowListener("bullet_impact")
 callbacks.Register("FireGameEvent", anti_brute)
 
 client.AllowListener("round_prestart")
 callbacks.Register("FireGameEvent", autobuy)
+
+callbacks.Register("AimbotTarget", target_snapline_get_target)
 
 callbacks.Register("Draw", function() 
     -- ui elements and checks
@@ -1982,8 +1986,9 @@ callbacks.Register("Draw", function()
     cond_ui()
 
     -- visuals
+    target_snapline_draw() 
     desync_arrows()
-    indicators()
+    indicators() 
 
     -- misc functions
     r8_dump_fix()
@@ -2001,7 +2006,12 @@ callbacks.Register("Draw", function()
     clamp()
 end)
 
-callbacks.Register("PostMove", function(cmd) 
+callbacks.Register("CreateMove", function(cmd) 
+    --rage
     rage_aa()
     lby_flick()
+    pitch_flick(cmd)
+
+    --semi
+    semi_aa(cmd)
 end)
