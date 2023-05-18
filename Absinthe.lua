@@ -102,8 +102,8 @@ local function watermark()
         draw.Color(30, 30, 30, 180)
         draw.FilledRect((screen_x - 12) - draw.GetTextSize(wm_text), 5, screen_x - 4, 29)
 
-        draw.Color(r, g, b, 255)
-        draw.ShadowRect((screen_x - 12) - draw.GetTextSize(wm_text), 29, screen_x - 4, 26, -4)
+        draw.Color(r, g, b, 180)
+        draw.FilledRect((screen_x - 12) - draw.GetTextSize(wm_text), 29, screen_x - 4, 26)
 
         draw.SetFont(font_watermark); draw.Color(210, 210, 210, 255)
         draw.TextShadow((screen_x - 7) - draw.GetTextSize(wm_text), 12, wm_text)
