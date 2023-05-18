@@ -2,7 +2,7 @@
     ABSINTHE BY OLEXON (https://aimware.net/forum/user/346412)
 ]]--
 
-local lua_ver = "1.0"
+local lua_ver = "1.1"
 local tab = gui.Tab(gui.Reference("RAGEBOT"), "ABSINTHE_TAB", "ABSINTHE V" .. lua_ver)
 local semi_group = gui.Groupbox(tab, "SEMI-RAGE", 15, 15, 200, 500)
 local aa_group = gui.Groupbox(tab, "ANTI-AIM", 230, 15, 200, 500)
@@ -42,6 +42,8 @@ local fs_sw = gui.Checkbox(aa_group, "ABSINTHE_FREESTANDING", "FREESTANDING", fa
 
 local desync_left = gui.Slider(aa_group, "ABSINTHE_DESYNC_LEFT", "DESYNC [LEFT]", 0, 0, 58, 2)
 local desync_right = gui.Slider(aa_group, "ABSINTHE_DESYNC_right", "DESYNC [RIGHT]", 0, 0, 58, 2)
+local roll_slider = gui.Slider(aa_group, "ABSINTHE_ROLL", "ROLL", 0, 0, 90, 1); roll_slider:SetDescription("VERY UNSAFE ESPECIALLY ABOVE 45°")
+
 local inverter_kb = gui.Keybox(aa_group, "ABSINTHE_INVERTER_KEY", "INVERTER", 0)
 
 gui.Text(aa_group, " ------- SLOWWALKING ------ ")
@@ -68,6 +70,14 @@ local undercross_indicators_sw = gui.Checkbox(misc_group, "ABSINTHE_UNDERCROSS_I
 local undercross_indicators_color = gui.ColorPicker(undercross_indicators_sw, "ABSINTHE_UNDERCROSS_COLOR", "", 75, 230, 145, 200)
 
 local killsay_sw = gui.Checkbox(misc_group, "ABSINTHE_KILLSAY", "KILLSAY", false)
+local viewmodel_sw = gui.Checkbox(misc_group, "ABSINTHE_OVERRIDE_VIEWMODEL", "OVERRIDE VIEWMODEL", false)
+
+local viewmodel_x_slider = gui.Slider(misc_group, "ABSINTHE_OVERRIDE_VIEWMODEL_X", "VIEWMODEL X", 0, -20, 20, 0.1)
+local viewmodel_y_slider = gui.Slider(misc_group, "ABSINTHE_OVERRIDE_VIEWMODEL_Y", "VIEWMODEL Y", 0, -20, 20, 0.1)
+local viewmodel_z_slider = gui.Slider(misc_group, "ABSINTHE_OVERRIDE_VIEWMODEL_Z", "VIEWMODEL Z", 0, -20, 20, 0.1)
+
+local aspect_sw = gui.Checkbox(misc_group, "ABSINTHE_ASPECTRATIO", "ASPECT RATIO", false)
+local aspect_slider = gui.Slider(misc_group, "ABSINTHE_ASPECTRATIO_VALUE", "ASPECT RATIO VALUE", 0, 0, 10, 0.1)
 
 local xy_reset = gui.Button(misc_group, "X/Y RESET", function() --isabel v2
     screen_x, screen_y = draw.GetScreenSize()
@@ -75,91 +85,52 @@ end); xy_reset:SetWidth(148)
 
 -- VISUAL STUFF --
 
+--[[local function sineout(time, start, add, dur)
+    return add * math.sin(time/dur * (math.pi/2)) + start
+end
+]]
 local font_main = draw.CreateFont("Verdana", 13, 25)
-local font_watermark = draw.CreateFont("Verdana", 15, 50)
+local font_watermark = draw.CreateFont("Verdana", 13, 1200)
 local font_undecross = draw.CreateFont("Verdana", 16, 800)
 local font_undecross_items = draw.CreateFont("Verdana", 12, 800)
 
-local notification_cache = {
-    anim_cache_y = 0,
-    anim_cache_x = 0,
-    anim_cache_font = 255,
-    wait_till_disappear = 0,
-}
+local function watermark()
+    local wm_text = "Absinthe | Ver: " .. lua_ver .. " | User: " .. cheat.GetUserName()
+    local r, g, b = watermark_col:GetValue()
 
-local should_draw = true; --show only on load
-local function draw_notification()
-    if should_draw then
-        local text = "Welcome, " .. cheat.GetUserName() .. "!"; -- im too lazy to change this var's name lol it should be notification_text not text lmao
-        local r, g, b = watermark_col:GetValue()
-    
-        draw.Color(0, 0, 0, 187);
-        draw.RoundedRectFill(((screen_x/2 - draw.GetTextSize(text)/2) - 6) + notification_cache.anim_cache_x, (screen_y - 100) - notification_cache.anim_cache_y, ((screen_x/2 + draw.GetTextSize(text)/2) + 6) - notification_cache.anim_cache_x, (screen_y - 100) - notification_cache.anim_cache_y + 30, 8, 8, 8, 8, 8);
+    if watermark_sw:GetValue() then
+        draw.Color(30, 30, 30, 180)
+        draw.FilledRect((screen_x - 12) - draw.GetTextSize(wm_text), 5, screen_x - 4, 29)
 
-        draw.Color(r, g, b, 200);
-        draw.RoundedRect(((screen_x/2 - draw.GetTextSize(text)/2) - 6) + notification_cache.anim_cache_x, (screen_y - 100) - notification_cache.anim_cache_y, ((screen_x/2 + draw.GetTextSize(text)/2) + 6) - notification_cache.anim_cache_x, (screen_y - 100) - notification_cache.anim_cache_y + 30, 8, 8, 8, 8, 8);
+        draw.Color(r, g, b, 255)
+        draw.ShadowRect((screen_x - 12) - draw.GetTextSize(wm_text), 29, screen_x - 4, 26, -4)
 
-        draw.SetFont(font_main);
-        draw.Color(r, g, b, notification_cache.anim_cache_font);
-        draw.Text(screen_x/2 - draw.GetTextSize(text)/2, (screen_y - 100) - notification_cache.anim_cache_y + 10, text)
+        draw.SetFont(font_watermark); draw.Color(210, 210, 210, 255)
+        draw.TextShadow((screen_x - 7) - draw.GetTextSize(wm_text), 12, wm_text)
+    end
+end
 
-        if notification_cache.anim_cache_y < 100 then
-            notification_cache.anim_cache_y = notification_cache.anim_cache_y + 6;
-        else
-            notification_cache.wait_till_disappear = notification_cache.wait_till_disappear + 1;
+local function viewmodel_override()
+    if viewmodel_sw:GetValue() then
+        if client.GetConVar("viewmodel_offset_x") ~= viewmodel_x_slider:GetValue() then
+            client.SetConVar("viewmodel_offset_x", viewmodel_x_slider:GetValue(), true)
+        end
 
-            if notification_cache.wait_till_disappear >= 280 then
-                if notification_cache.anim_cache_font > 0 then
-                    notification_cache.anim_cache_font = notification_cache.anim_cache_font - 5;
-                end
+        if client.GetConVar("viewmodel_offset_y") ~= viewmodel_y_slider:GetValue() then
+            client.SetConVar("viewmodel_offset_y", viewmodel_y_slider:GetValue(), true)
+        end
 
-                if notification_cache.anim_cache_font <= 0 then
-                    if (screen_x/2 - 6) - draw.GetTextSize(text)/2 + notification_cache.anim_cache_x <= screen_x/2 then
-                        notification_cache.anim_cache_x = notification_cache.anim_cache_x + 1;
-                    else
-                        notification_cache.anim_cache_y = 0;
-                        notification_cache.anim_cache_x = 0;
-                        notification_cache.anim_cache_font = 255;
-                        notification_cache.wait_till_disappear = 0;
-
-                        should_draw = false;
-                    end
-                end
-            end
+        if client.GetConVar("viewmodel_offset_z") ~= viewmodel_z_slider:GetValue() then
+            client.SetConVar("viewmodel_offset_z", viewmodel_z_slider:GetValue(), true)
         end
     end
 end
 
-local watermark_cache = {
-    watermark_anim_cache_x = 0,
-    watermark_text_anim_cache = 0,
-}
-
-local function watermark()
-    if watermark_sw:GetValue() then
-        local watermark_text = "Absinthe | ver: " .. lua_ver .. " | user: " .. cheat.GetUserName();
-        local r, g, b = watermark_col:GetValue()
-
-        draw.Color(0, 0, 0, 187);
-        draw.RoundedRectFill((screen_x - 20) - watermark_cache.watermark_anim_cache_x, 10, screen_x - 10, 40, 8, 8, 8, 8, 8);
-
-        draw.Color(r, g, b, 200);
-        draw.RoundedRect((screen_x - 20) - watermark_cache.watermark_anim_cache_x, 10, screen_x - 10, 40, 8, 8, 8, 8, 8);
-        
-        draw.SetFont(font_watermark);
-        draw.Color(r, g, b, watermark_cache.watermark_text_anim_cache);
-        draw.Text(screen_x - draw.GetTextSize(watermark_text) - 20, 20, watermark_text);
-
-        if (screen_x - 20) - watermark_cache.watermark_anim_cache_x > (screen_x - draw.GetTextSize(watermark_text) - 30) then
-            watermark_cache.watermark_anim_cache_x = watermark_cache.watermark_anim_cache_x + 3;
-        else
-            if watermark_cache.watermark_text_anim_cache < 255 then
-                watermark_cache.watermark_text_anim_cache = watermark_cache.watermark_text_anim_cache + 5;
-            end
+local function aspect_ratio()
+    if aspect_sw:GetValue() then
+        if client.GetConVar("r_aspectratio") ~= aspect_slider:GetValue() then
+            client.SetConVar("r_aspectratio", aspect_slider:GetValue(), true)
         end
-    else
-        watermark_cache.watermark_anim_cache_x = 0
-        watermark_cache.watermark_text_anim_cache = 0
     end
 end
 
@@ -211,51 +182,31 @@ local undercross_pos = {
     [5] = 100,
 }
 
-local adjust_scope = 0; local adjust_scope = 0
 local function undercross_indicators()
+    local pos_items = function(string)
+        return screen_x / 2 - draw.GetTextSize(string) / 2
+    end
+
     if undercross_indicators_sw:GetValue() then
         local localplayer = entities.GetLocalPlayer()
 
         if localplayer == nil or not localplayer:IsAlive() then return end
 
-        local scoped_pos_items = function(string)
-            return screen_x/2 - draw.GetTextSize(string)/2
-        end
-
-        -- thanks cheeseot i will implement this one day
-        --[[
-            local function sineout(time, start, add, dur)
-                return add * math.sin(time/dur * (math.pi/2)) + start
-            end
-
-            local x = sineout(globals.CurTime() - anim.starttime, anim.lastpos.x, posx - anim.lastpos.x, animspeed * anim.speedmult)
-        ]]
-
-        if localplayer:GetPropBool("m_bIsScoped") then
-            if adjust_scope < 40 then
-                adjust_scope = adjust_scope + 1
-            end
-        else
-            if adjust_scope > 0 then
-                adjust_scope = adjust_scope - 1
-            end
-        end
-
         local r, g, b, a = undercross_indicators_color:GetValue()
         local itemsc = 1
 
         draw.SetFont(font_undecross); draw.Color(r, g, b, a)
-        draw.TextShadow(scoped_pos_items("Absinthe") + adjust_scope, screen_y/2 + 25, "Absinthe")
+        draw.TextShadow(pos_items("Absinthe"), screen_y/2 + 25, "Absinthe")
 
         draw.SetFont(font_undecross_items)
 
         if awol_sw:GetValue() then
-            draw.TextShadow(scoped_pos_items("autowall") + adjust_scope, screen_y/2 + undercross_pos[itemsc], "autowall")
+            draw.TextShadow(pos_items("autowall"), screen_y/2 + undercross_pos[itemsc], "autowall")
 
             itemsc = itemsc + 1
         end
 
-        draw.TextShadow(scoped_pos_items("fov: " .. gui.GetValue("rbot.aim.target.fov") .. "°") + adjust_scope, screen_y/2 + undercross_pos[itemsc],
+        draw.TextShadow(pos_items("fov: " .. gui.GetValue("rbot.aim.target.fov") .. "°"), screen_y/2 + undercross_pos[itemsc],
         "fov: " .. gui.GetValue("rbot.aim.target.fov") .. "°")
 
         itemsc = itemsc + 1
@@ -271,6 +222,7 @@ local function clamp() -- this won't allow user to set some things to minimize t
     gui.SetValue("rbot.antiaim.advanced.pitch", 0)
     gui.SetValue("rbot.antiaim.advanced.antiresolver", 0)
     gui.SetValue("rbot.antiaim.extra.exposefake", 0)
+    gui.SetValue("rbot.antiaim.advanced.roll", 0)
 end
 
 local function dynamicfov()
@@ -367,6 +319,18 @@ local function inverter()
     end
 end
 
+local function roll(UserCmd)
+    if UserCmd.viewangles.z ~= roll_slider:GetValue() and not cheat.IsFakeDucking() then
+        if desync_side == "left" then
+            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, roll_slider:GetValue())
+        elseif desync_side == "center" then
+            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, UserCmd.viewangles.z)
+        elseif desync_side == "right" then
+            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, -roll_slider:GetValue())
+        end
+    end
+end
+
 local function desync_mods()
     local localplayer = entities.GetLocalPlayer()
     if localplayer == nil or not localplayer:IsAlive() then return end
@@ -427,12 +391,15 @@ end
 client.AllowListener("player_death")
 callbacks.Register("FireGameEvent", killsay)
 
+callbacks.Register("CreateMove", roll)
+
 callbacks.Register("Draw", function()
     -- VISUAL --
-    draw_notification()
     watermark()
     aa_arrows()
     undercross_indicators()
+    viewmodel_override()
+    aspect_ratio()
 
     -- SEMI-RAGE --
     clamp()
