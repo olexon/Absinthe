@@ -2,11 +2,12 @@
     ABSINTHE BY OLEXON (https://aimware.net/forum/user/346412)
 ]]--
 
-local lua_ver = "1.1"
+local lua_ver = "1.2"
 local tab = gui.Tab(gui.Reference("RAGEBOT"), "ABSINTHE_TAB", "ABSINTHE V" .. lua_ver)
 local semi_group = gui.Groupbox(tab, "SEMI-RAGE", 15, 15, 200, 500)
 local aa_group = gui.Groupbox(tab, "ANTI-AIM", 230, 15, 200, 500)
 local misc_group = gui.Groupbox(tab, "MISC", 445, 15, 180, 500)
+local lby_group = gui.Groupbox(tab, "LBY (EXPERIMENTAL)", 15, 395, 200, 500)
 
 local screen_x, screen_y = draw.GetScreenSize()
 
@@ -23,6 +24,13 @@ local weapon_categories = { --for awall toggle
     [10] = "sniper",
     [11] = "lmg",
 }
+
+local function get_velocity() --thanks m0nsterJ
+    local local_player = entities.GetLocalPlayer()
+
+    vel_x, vel_y = local_player:GetPropFloat("localdata", "m_vecVelocity[0]"), local_player:GetPropFloat("localdata", "m_vecVelocity[1]")
+    return math.sqrt(vel_y ^ 2 + vel_x ^ 2)
+end
 
 -- SWITCHES ETC ETC --
 
@@ -82,6 +90,10 @@ local aspect_slider = gui.Slider(misc_group, "ABSINTHE_ASPECTRATIO_VALUE", "ASPE
 local xy_reset = gui.Button(misc_group, "X/Y RESET", function() --isabel v2
     screen_x, screen_y = draw.GetScreenSize()
 end); xy_reset:SetWidth(148)
+
+-- LBY --
+local lby_sw = gui.Checkbox(lby_group, "ABSINTHE_LBY", "LBY BREAKER", false)
+local lby_offset_slider = gui.Slider(lby_group, "ABSINTHE_LBY_OFFSET", "LBY OFFSET", 0, 0, 179)
 
 -- VISUAL STUFF --
 
@@ -335,10 +347,10 @@ local function desync_mods()
     local localplayer = entities.GetLocalPlayer()
     if localplayer == nil or not localplayer:IsAlive() then return end
 
-    local localplayer_velocity = localplayer:GetPropVector("localdata", "m_vecVelocity[0]"):Length()
+    local localplayer_velocity = get_velocity()
     local is_slowwalking = false
 
-    if gui.GetValue("rbot.accuracy.movement.slowkey") == nil or gui.GetValue("rbot.accuracy.movement.slowkey") == 0 then
+    if gui.GetValue("rbot.accuracy.movement.slowkey") == nil or gui.GetValue("rbot.accuracy.movement.slowkey") == 0 or localplayer_velocity < 3 then
         is_slowwalking = false
     else
         is_slowwalking = input.IsButtonDown(gui.GetValue("rbot.accuracy.movement.slowkey"))
@@ -386,12 +398,43 @@ local function desync_mods()
     end
 end
 
+local next_lby_update = 0
+local function lby(UserCmd)
+    if lby_sw:GetValue() then
+        local localplayer = entities.GetLocalPlayer()
+        if localplayer == nil or not localplayer:IsAlive() then return end
+
+        local localplayer_velocity = get_velocity()
+
+        --print(localplayer_velocity)
+
+        if localplayer_velocity >= 3 then
+            next_lby_update = globals.CurTime() + 0.22
+        end
+
+        if globals.CurTime() >= next_lby_update then
+            next_lby_update = globals.CurTime() + 1.1
+
+            if desync_side == "left" then
+                UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y + lby_offset_slider:GetValue(), UserCmd.viewangles.z)
+            elseif desync_side == "right" then
+                UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y - lby_offset_slider:GetValue(), UserCmd.viewangles.z)
+            end
+
+            UserCmd.sendpacket = false
+        end
+    end
+end
+
 -- ALL OF THAT GARBAGE EXECUTES HERE --
 
 client.AllowListener("player_death")
 callbacks.Register("FireGameEvent", killsay)
 
-callbacks.Register("CreateMove", roll)
+callbacks.Register("CreateMove", function(UserCmd) 
+    roll(UserCmd)
+    lby(UserCmd)
+end)
 
 callbacks.Register("Draw", function()
     -- VISUAL --
