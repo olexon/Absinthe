@@ -1,13 +1,13 @@
 --[[
-    ABSINTHE BY OLEXON (https://aimware.net/forum/user/346412)
+    ABSINTHE.LUA BY OLEXON (https://aimware.net/forum/user/346412)
 ]]--
 
-local lua_ver = "1.2"
+local lua_ver = "1.3"
 local tab = gui.Tab(gui.Reference("RAGEBOT"), "ABSINTHE_TAB", "ABSINTHE V" .. lua_ver)
 local semi_group = gui.Groupbox(tab, "SEMI-RAGE", 15, 15, 200, 500)
 local aa_group = gui.Groupbox(tab, "ANTI-AIM", 230, 15, 200, 500)
 local misc_group = gui.Groupbox(tab, "MISC", 445, 15, 180, 500)
-local lby_group = gui.Groupbox(tab, "LBY (EXPERIMENTAL)", 15, 395, 200, 500)
+local lby_group = gui.Groupbox(tab, "LBY (EXPERIMENTAL)", 15, 445, 200, 500)
 
 local screen_x, screen_y = draw.GetScreenSize()
 
@@ -32,6 +32,20 @@ local function get_velocity() --thanks m0nsterJ
     return math.sqrt(vel_y ^ 2 + vel_x ^ 2)
 end
 
+local function get_base_yaw()
+    local str_table = {}
+    for str in string.gmatch(gui.GetValue("rbot.antiaim.base"), "([^".."%s".."]+)") do 
+        table.insert(str_table, str)
+    end
+
+    local base_yaw = str_table[1]:gsub("\"", "")
+    return tonumber(base_yaw)
+end
+
+local function get_percentage(val, max)
+    return math.floor(val / max * 100)
+end
+
 -- SWITCHES ETC ETC --
 
 -- SEMI --
@@ -45,12 +59,15 @@ local fl_randomizer_sw = gui.Checkbox(semi_group, "ABSINTHE_FL_RANDOMIZER", "FAK
 local fl_randomizer_min = gui.Slider(semi_group, "ABSINTHE_FL_RANDOMIZER_MIN", "FAKELAG MIN", 3, 3, 8)
 local fl_randomizer_max = gui.Slider(semi_group, "ABSINTHE_FL_RANDOMIZER_MAX", "FAKELAG MAX", 3, 3, 8)
 
+local ragetoggle_sw = gui.Checkbox(semi_group, "ABSINTHE_RAGETOGGLE", "TOGGLE RAGE AA", false); ragetoggle_sw:SetDescription("Unsafe")
+
 -- AA --
 local fs_sw = gui.Checkbox(aa_group, "ABSINTHE_FREESTANDING", "FREESTANDING", false); fs_sw:SetDescription("Unsafe")
 
 local desync_left = gui.Slider(aa_group, "ABSINTHE_DESYNC_LEFT", "DESYNC [LEFT]", 0, 0, 58, 2)
 local desync_right = gui.Slider(aa_group, "ABSINTHE_DESYNC_right", "DESYNC [RIGHT]", 0, 0, 58, 2)
 local roll_slider = gui.Slider(aa_group, "ABSINTHE_ROLL", "ROLL", 0, 0, 90, 1); roll_slider:SetDescription("VERY UNSAFE ESPECIALLY ABOVE 45°")
+local roll_combo = gui.Combobox(aa_group, "ABSINTHE_ROLL_MODE", "ROLL MODE", "POSITIVE", "NEGATIVE", "JITTER", "DESYNC BASED")
 
 local inverter_kb = gui.Keybox(aa_group, "ABSINTHE_INVERTER_KEY", "INVERTER", 0)
 
@@ -92,7 +109,7 @@ local xy_reset = gui.Button(misc_group, "X/Y RESET", function() --isabel v2
 end); xy_reset:SetWidth(148)
 
 -- LBY --
-local lby_sw = gui.Checkbox(lby_group, "ABSINTHE_LBY", "LBY BREAKER", false)
+local lby_sw = gui.Checkbox(lby_group, "ABSINTHE_LBY", "LBY FLICK", false); lby_sw:SetDescription("Unsafe")
 local lby_offset_slider = gui.Slider(lby_group, "ABSINTHE_LBY_OFFSET", "LBY OFFSET", 0, 0, 179)
 
 -- VISUAL STUFF --
@@ -101,6 +118,7 @@ local lby_offset_slider = gui.Slider(lby_group, "ABSINTHE_LBY_OFFSET", "LBY OFFS
     return add * math.sin(time/dur * (math.pi/2)) + start
 end
 ]]
+
 local font_main = draw.CreateFont("Verdana", 13, 25)
 local font_watermark = draw.CreateFont("Verdana", 13, 1200)
 local font_undecross = draw.CreateFont("Verdana", 16, 800)
@@ -108,6 +126,7 @@ local font_undecross_items = draw.CreateFont("Verdana", 12, 800)
 
 local function watermark()
     local wm_text = "Absinthe | Ver: " .. lua_ver .. " | User: " .. cheat.GetUserName()
+
     local r, g, b = watermark_col:GetValue()
 
     if watermark_sw:GetValue() then
@@ -176,10 +195,10 @@ local function aa_arrows()
         if not gui.GetValue( "rbot.master" ) then return end
         local r, g, b, a = aa_arrows_col:GetValue()
         
-        if gui.GetValue("rbot.antiaim.base.rotation") < 0 then
+        if gui.GetValue("rbot.antiaim.base.rotation") < 0 and get_base_yaw() == 0 or gui.GetValue("rbot.antiaim.base.rotation") > 0 and get_base_yaw() ~= 0 then
             draw.Color(r, g, b, a)
             draw.Triangle(screen_x / 2 + 50, screen_y / 2 - 4 , screen_x / 2 + 69, screen_y / 2, screen_x / 2 + 50, screen_y / 2 + 4)
-        elseif gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+        elseif gui.GetValue("rbot.antiaim.base.rotation") > 0 and get_base_yaw() == 0 or gui.GetValue("rbot.antiaim.base.rotation") < 0 and get_base_yaw() ~= 0 then
             draw.Color(r, g, b, a)
             draw.Triangle(screen_x / 2 - 50, screen_y / 2 + 4, screen_x / 2 - 50, screen_y / 2 - 4,  screen_x / 2 - 69, screen_y / 2)
         end
@@ -222,16 +241,33 @@ local function undercross_indicators()
         "fov: " .. gui.GetValue("rbot.aim.target.fov") .. "°")
 
         itemsc = itemsc + 1
+
+        if roll_slider:GetValue() > 0 then
+            draw.Color(2.55 * (get_percentage(roll_slider:GetValue(), 90)), 255 - (2.55 * (get_percentage(roll_slider:GetValue(), 90))), 0, a)
+            draw.TextShadow(pos_items("roll: " .. roll_slider:GetValue() .. "°"), screen_y/2 + undercross_pos[itemsc], "roll: " .. roll_slider:GetValue() .. "°")
+
+            itemsc = itemsc + 1
+        end
+
+        if ragetoggle_sw:GetValue() then
+            draw.Color(255, 0, 0, math.abs((a * math.sin(globals.CurTime()))))
+            draw.TextShadow(pos_items("rage aa"), screen_y/2 + undercross_pos[itemsc], "rage aa")
+
+            itemsc = itemsc + 1
+        end
     end
 end
 
 -- POO POO --
 
 local function clamp() -- this won't allow user to set some things to minimize the chance of getting banned
-    gui.SetValue("rbot.antiaim.base", 0)
+    if not ragetoggle_sw:GetValue() then
+        gui.SetValue("rbot.antiaim.base", 0)
+        gui.SetValue("rbot.antiaim.advanced.pitch", 0)
+    end
+
     gui.SetValue("rbot.antiaim.condition.autodir.targets", 0)
     --gui.SetValue("rbot.antiaim.condition.autodir.edges", 0)
-    gui.SetValue("rbot.antiaim.advanced.pitch", 0)
     gui.SetValue("rbot.antiaim.advanced.antiresolver", 0)
     gui.SetValue("rbot.antiaim.extra.exposefake", 0)
     gui.SetValue("rbot.antiaim.advanced.roll", 0)
@@ -310,9 +346,17 @@ local desync_side = "left"; local override_desync = false
 local function desync()
     if not override_desync then
         if desync_side == "left" then
-            gui.SetValue("rbot.antiaim.base.rotation", -desync_left:GetValue())
+            if get_base_yaw() > 0 then
+                gui.SetValue("rbot.antiaim.base.rotation", desync_left:GetValue())
+            else
+                gui.SetValue("rbot.antiaim.base.rotation", -desync_left:GetValue())
+            end
         elseif desync_side == "right" then
-            gui.SetValue("rbot.antiaim.base.rotation", desync_right:GetValue())
+            if get_base_yaw() > 0 then
+                gui.SetValue("rbot.antiaim.base.rotation", -desync_left:GetValue())
+            else
+                gui.SetValue("rbot.antiaim.base.rotation", desync_left:GetValue())
+            end
         elseif desync_side == "center" then
             gui.SetValue("rbot.antiaim.base.rotation", 0)
         end
@@ -331,15 +375,28 @@ local function inverter()
     end
 end
 
+local roll_value = 0
 local function roll(UserCmd)
-    if UserCmd.viewangles.z ~= roll_slider:GetValue() and not cheat.IsFakeDucking() then
-        if desync_side == "left" then
-            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, roll_slider:GetValue())
-        elseif desync_side == "center" then
-            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, UserCmd.viewangles.z)
-        elseif desync_side == "right" then
-            UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, -roll_slider:GetValue())
+    if roll_combo:GetValue() == 0 then
+        roll_value = roll_slider:GetValue()
+    elseif roll_combo:GetValue() == 1 then
+        roll_value = -roll_slider:GetValue()
+    elseif roll_combo:GetValue() == 2 then
+        if roll_value >= 0 then
+            roll_value = -roll_slider:GetValue()
+        else
+            roll_value = roll_slider:GetValue()
         end
+    elseif roll_combo:GetValue() == 3 then
+        if gui.GetValue("rbot.antiaim.base.rotation") < 0  then
+            roll_value = roll_slider:GetValue()
+        elseif gui.GetValue("rbot.antiaim.base.rotation") > 0 then
+            roll_value = -roll_slider:GetValue()
+        end
+    end
+
+    if UserCmd.viewangles.z ~= roll_value and not cheat.IsFakeDucking() then
+        UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y, roll_value)
     end
 end
 
@@ -406,22 +463,31 @@ local function lby(UserCmd)
 
         local localplayer_velocity = get_velocity()
 
-        --print(localplayer_velocity)
-
-        if localplayer_velocity >= 3 then
+        if localplayer_velocity > 3 or bit.band(UserCmd.buttons, bit.lshift(1, 0)) > 0 or fs_sw:GetValue() or 
+        bit.band(UserCmd.buttons, bit.lshift(1, 5)) > 0 or fs_sw:GetValue() or cheat.IsFakeDucking() then
             next_lby_update = globals.CurTime() + 0.22
         end
 
         if globals.CurTime() >= next_lby_update then
-            next_lby_update = globals.CurTime() + 1.1
+            next_lby_update = globals.CurTime() + 0.22
 
-            if desync_side == "left" then
+            if gui.GetValue("rbot.antiaim.base.rotation") < 0 then
                 UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y + lby_offset_slider:GetValue(), UserCmd.viewangles.z)
-            elseif desync_side == "right" then
+            elseif gui.GetValue("rbot.antiaim.base.rotation") > 0  then
                 UserCmd.viewangles = EulerAngles(UserCmd.viewangles.x, UserCmd.viewangles.y - lby_offset_slider:GetValue(), UserCmd.viewangles.z)
             end
+        end
+    end
+end
 
-            UserCmd.sendpacket = false
+local function rageaa()
+    if ragetoggle_sw:GetValue() then
+        if gui.GetValue("rbot.antiaim.advanced.pitch") ~= 1 then
+            gui.SetValue("rbot.antiaim.advanced.pitch", 1)
+        end
+
+        if get_base_yaw() ~= 180 then
+            gui.SetValue("rbot.antiaim.base", 180)
         end
     end
 end
@@ -449,6 +515,7 @@ callbacks.Register("Draw", function()
     dynamicfov()
     autowall()
     fl_randomizer()
+    rageaa()
 
     -- ANTI-AIM --
     freestanding()
